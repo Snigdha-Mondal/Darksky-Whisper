@@ -152,21 +152,7 @@ This repository includes a production `render.yaml` manifest:
 
 ---
 
-## 9. Operating Manual & Documentation Navigation
-
-This project is governed by the **DeftBench AI Agent Loop** system:
-
-* 🚪 **[AGENTS.md](AGENTS.md)**: AI agent front door & 8 golden rules.
-* 📋 **[ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md)**: Operating manual, 9-step agent loop, and stop signs.
-* 🎯 **[PRD.md](PRD.md)**: Product requirements, target personas, and scope.
-* 🏗️ **[ARCHITECTURE.md](ARCHITECTURE.md)**: System design and locked architectural standards.
-* 📝 **[BACKLOG.md](BACKLOG.md)**: Phased task backlog and human checkpoints.
-* 🧠 **[PROGRESS.md](PROGRESS.md)**: Persistent memory, session log, and decisions log.
-* 📐 **[specs/](specs/)**: In-depth subsystem specifications.
-
----
-
-## 10. License & Open Source
+## 9. License & Open Source
 
 Licensed under the **Apache License, Version 2.0** ([LICENSE](LICENSE)).  
 Open standard compliance: [Agent Skills Open Standard](https://agentskills.io).
