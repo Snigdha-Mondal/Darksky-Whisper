@@ -20,6 +20,8 @@ class DarkSkyApp {
     this.audioChunks = [];
     this.audioStream = null;
     this.isSpeaking = false;
+    this.silenceTimeout = null;
+    this.maxListeningTimer = null;
 
     // Observer telemetry defaults (Cherry Springs State Park fallback)
     this.observer = {
@@ -117,12 +119,12 @@ class DarkSkyApp {
     switch (newState) {
       case State.IDLE:
         this.stateTitle.textContent = 'READY IN THE GRASS';
-        this.stateSubtitle.textContent = 'Tap anywhere on the glass to ask a question';
+        this.stateSubtitle.textContent = 'Tap anywhere once to speak (hands-free auto-detect)';
         this.hubIcon.textContent = '🎙️';
         break;
       case State.LISTENING:
         this.stateTitle.textContent = 'LISTENING TO THE SKY';
-        this.stateSubtitle.textContent = 'Speak your question out loud, then tap again';
+        this.stateSubtitle.textContent = 'Speak your question... answers automatically when you pause';
         this.hubIcon.textContent = '🟢';
         break;
       case State.COMPUTING:
@@ -144,6 +146,8 @@ class DarkSkyApp {
   async startListening() {
     this.audioChunks = [];
     this.recognizedTranscript = '';
+    clearTimeout(this.silenceTimeout);
+    clearTimeout(this.maxListeningTimer);
 
     // Initialize Web Speech Recognition if available in Chrome/Edge/Safari
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -159,6 +163,33 @@ class DarkSkyApp {
           const transcript = event.results[current][0].transcript;
           this.recognizedTranscript = transcript;
           this.stateSubtitle.textContent = `"${transcript}"`;
+
+          // Automatic speech pause detection: if user pauses for 1.6s after speaking, compute automatically!
+          clearTimeout(this.silenceTimeout);
+          this.silenceTimeout = setTimeout(() => {
+            if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
+              console.log('Voice pause detected -> auto-advancing to COMPUTING');
+              this.stopListeningAndCompute();
+            }
+          }, 1600);
+        };
+
+        // When browser speech engine detects end of spoken phrase
+        this.recognition.onspeechend = () => {
+          clearTimeout(this.silenceTimeout);
+          this.silenceTimeout = setTimeout(() => {
+            if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
+              console.log('onspeechend fired -> auto-advancing to COMPUTING');
+              this.stopListeningAndCompute();
+            }
+          }, 400);
+        };
+
+        this.recognition.onend = () => {
+          // If speech recognition ended naturally with words spoken, auto-advance
+          if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
+            this.stopListeningAndCompute();
+          }
         };
 
         this.recognition.onerror = (e) => {
@@ -170,6 +201,23 @@ class DarkSkyApp {
         console.warn('SpeechRecognition start error:', err);
       }
     }
+
+    // Safety timeout: if no speech is heard at all after 7 seconds, revert to idle
+    this.maxListeningTimer = setTimeout(() => {
+      if (this.currentState === State.LISTENING && !this.recognizedTranscript.trim()) {
+        console.log('No speech detected within 7s -> returning to IDLE');
+        this.setState(State.IDLE);
+        if (this.recognition) {
+          try { this.recognition.stop(); } catch (e) {}
+        }
+        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+          this.mediaRecorder.stop();
+        }
+        if (this.audioStream) {
+          this.audioStream.getTracks().forEach((track) => track.stop());
+        }
+      }
+    }, 7000);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -198,6 +246,13 @@ class DarkSkyApp {
   }
 
   stopListeningAndCompute() {
+    clearTimeout(this.silenceTimeout);
+    clearTimeout(this.maxListeningTimer);
+
+    if (this.currentState === State.COMPUTING) {
+      return; // Prevent duplicate dispatch
+    }
+
     this.setState(State.COMPUTING);
 
     if (this.recognition) {
