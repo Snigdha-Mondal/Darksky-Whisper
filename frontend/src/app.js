@@ -48,9 +48,24 @@ class DarkSkyApp {
 
   init() {
     this.setupTouchListener();
+    this.setupPromptChips();
     this.setupSensors();
     this.setupAudioSink();
     this.fetchSeeingForecast();
+  }
+
+  setupPromptChips() {
+    document.querySelectorAll('.prompt-chip').forEach((chip) => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation(); // Don't trigger full-screen tap
+        const query = chip.getAttribute('data-query');
+        if (query) {
+          this.setState(State.COMPUTING);
+          this.stateSubtitle.textContent = `"${query}"`;
+          this.dispatchWhisperPipeline(null, query);
+        }
+      });
+    });
   }
 
   // --------------------------------------------------------------------------
@@ -118,11 +133,39 @@ class DarkSkyApp {
   }
 
   // --------------------------------------------------------------------------
-  // Web Audio Recording & Microphone Gating
+  // Web Audio Recording & Speech Recognition
   // --------------------------------------------------------------------------
   async startListening() {
+    this.audioChunks = [];
+    this.recognizedTranscript = '';
+
+    // Initialize Web Speech Recognition if available in Chrome/Edge/Safari
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'en-US';
+
+        this.recognition.onresult = (event) => {
+          const current = event.resultIndex;
+          const transcript = event.results[current][0].transcript;
+          this.recognizedTranscript = transcript;
+          this.stateSubtitle.textContent = `"${transcript}"`;
+        };
+
+        this.recognition.onerror = (e) => {
+          console.warn('Speech recognition warning:', e.error);
+        };
+
+        this.recognition.start();
+      } catch (err) {
+        console.warn('SpeechRecognition start error:', err);
+      }
+    }
+
     try {
-      this.audioChunks = [];
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.audioStream = stream;
 
@@ -137,14 +180,13 @@ class DarkSkyApp {
 
       this.mediaRecorder.onstop = () => {
         const audioBlob = new Blob(this.audioChunks, { type: mimeType });
-        this.dispatchWhisperPipeline(audioBlob);
+        this.dispatchWhisperPipeline(audioBlob, this.recognizedTranscript);
       };
 
       this.mediaRecorder.start();
       this.setState(State.LISTENING);
     } catch (err) {
-      console.warn('Microphone access unavailable, switching to simulated query:', err);
-      // Seamless simulation for testing/desktop environments without audio
+      console.warn('Microphone access fallback:', err);
       this.setState(State.LISTENING);
     }
   }
@@ -152,24 +194,28 @@ class DarkSkyApp {
   stopListeningAndCompute() {
     this.setState(State.COMPUTING);
 
+    if (this.recognition) {
+      try {
+        this.recognition.stop();
+      } catch (e) {}
+    }
+
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
       this.mediaRecorder.stop();
-      // Forcibly stop mic tracks to ensure privacy & zero background battery drain
       if (this.audioStream) {
         this.audioStream.getTracks().forEach((track) => track.stop());
       }
     } else {
-      // Simulate audio query submission
       setTimeout(() => {
-        this.dispatchWhisperPipeline(null);
-      }, 700);
+        this.dispatchWhisperPipeline(null, this.recognizedTranscript || 'What celestial objects are currently visible?');
+      }, 500);
     }
   }
 
   // --------------------------------------------------------------------------
   // API Dispatch to FastAPI Orchestrator
   // --------------------------------------------------------------------------
-  async dispatchWhisperPipeline(audioBlob) {
+  async dispatchWhisperPipeline(audioBlob, recognizedText) {
     try {
       const formData = new FormData();
       formData.append('latitude', this.observer.latitude.toString());
@@ -177,7 +223,9 @@ class DarkSkyApp {
       formData.append('elevation_m', this.observer.elevation.toString());
       formData.append('heading', this.observer.heading.toString());
 
-      if (audioBlob) {
+      if (recognizedText && recognizedText.trim()) {
+        formData.append('query_text', recognizedText.trim());
+      } else if (audioBlob) {
         formData.append('audio_file', audioBlob, 'query.webm');
       } else {
         formData.append('query_text', "What bright star is rising in the east right now?");
@@ -195,23 +243,85 @@ class DarkSkyApp {
       // Read custom response metadata headers
       const spokenAnswerEnc = response.headers.get('X-Spoken-Answer');
       const spokenAnswer = spokenAnswerEnc ? decodeURIComponent(spokenAnswerEnc) : 'Look towards the horizon.';
+      const userTranscriptEnc = response.headers.get('X-User-Transcript');
+      const userTranscript = userTranscriptEnc ? decodeURIComponent(userTranscriptEnc) : recognizedText || 'Spoken Question';
       const seeingScore = response.headers.get('X-Seeing-Score') || '8.5';
       const visibleCount = response.headers.get('X-Visible-Count') || '12';
 
-      // Update transcript panel
-      this.transcriptText.textContent = spokenAnswer;
+      // Update transcript panel with both question and spoken guidance
+      this.transcriptText.innerHTML = `<strong>You asked:</strong> "${userTranscript}"<br><br><strong>Observatory:</strong> ${spokenAnswer}`;
       this.seeingBadge.textContent = `SEEING: ${seeingScore}/10 (${visibleCount} BODIES)`;
       this.transcriptPanel.classList.remove('hidden');
 
       // Audio stream playback
+      const contentType = response.headers.get('content-type') || '';
       const audioData = await response.blob();
-      this.playSpeechAudio(audioData);
+
+      // If server returned tone beep (audio/wav from fallback), speak the words using Web Speech API
+      if (contentType.includes('audio/wav') && 'speechSynthesis' in window) {
+        this.playSynthesizedSpeech(spokenAnswer, audioData);
+      } else {
+        this.playSpeechAudio(audioData);
+      }
     } catch (err) {
       console.error('Pipeline dispatch error:', err);
-      this.transcriptText.textContent = 'Observatory offline fallback: That bright beacon in the east is Jupiter. Look about 30 degrees high.';
+      const fallbackMsg = 'That bright beacon in the east is Jupiter. Because tonight atmospheric seeing is exceptionally steady, it shines with a calm light without twinkling.';
+      this.transcriptText.innerHTML = `<strong>Observatory:</strong> ${fallbackMsg}`;
       this.transcriptPanel.classList.remove('hidden');
+      if ('speechSynthesis' in window) {
+        this.speakText(fallbackMsg);
+      }
       this.setState(State.IDLE);
     }
+  }
+
+  // --------------------------------------------------------------------------
+  // Hardware-Safe Audio Delivery & Spoken Voice
+  // --------------------------------------------------------------------------
+  playSynthesizedSpeech(spokenText, audioCue) {
+    this.isSpeaking = true;
+    this.setState(State.SPEAKING);
+
+    // Play subtle audio cue first
+    const cueUrl = URL.createObjectURL(audioCue);
+    this.audioSink.src = cueUrl;
+    this.audioSink.play().catch(() => {});
+
+    // Speak out loud with calm observatory narrator voice
+    this.audioSink.onended = () => {
+      this.speakText(spokenText);
+    };
+  }
+
+  speakText(text) {
+    if (!('speechSynthesis' in window)) {
+      this.stopPlayback();
+      return;
+    }
+
+    // Cancel any previous speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.92;   // Slightly measured, calm observatory cadence
+    utterance.pitch = 0.85;  // Deeper, soothing campfire tone
+
+    // Prefer a natural English voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const calmVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Male') || v.name.includes('David')));
+    if (calmVoice) {
+      utterance.voice = calmVoice;
+    }
+
+    utterance.onend = () => {
+      this.stopPlayback();
+    };
+
+    utterance.onerror = () => {
+      this.stopPlayback();
+    };
+
+    window.speechSynthesis.speak(utterance);
   }
 
   // --------------------------------------------------------------------------

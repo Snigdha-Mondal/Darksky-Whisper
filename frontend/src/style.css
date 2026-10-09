@@ -230,6 +230,35 @@ body.state-speaking .status-aura {
   opacity: 0.75;
 }
 
+/* Quick Suggestion Chips */
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 1.1rem;
+  max-width: 380px;
+}
+
+.prompt-chip {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  background: rgba(45, 8, 8, 0.55);
+  border: 1px solid var(--red-dim);
+  border-radius: 14px;
+  padding: 0.35rem 0.65rem;
+  color: var(--red-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-chip:hover, .prompt-chip:active {
+  background: var(--red-dim);
+  color: var(--red-accent);
+  border-color: var(--red-accent);
+  box-shadow: 0 0 10px var(--red-glow);
+}
+
 /* ==========================================================================
    Telemetry Deck
    ========================================================================== */
