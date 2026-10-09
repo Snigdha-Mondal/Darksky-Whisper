@@ -20,12 +20,12 @@
 ## Phase 2: Tabular Atmospheric Seeing & Dew Forecaster (TabPFN)
 **Exit Goal**: Tabular model inference pipeline that ingests meteorological telemetry CSVs and outputs Seeing Quality Score (0–10), peak observation window, and dew risk warning.
 
-- [ ] **Task 2.1**: Define forecast schemas in `backend/app/schemas/forecast_schema.py` (`WeatherTelemetry`, `SeeingForecastResponse`).
-- [ ] **Task 2.2**: Create sample weather telemetry fixture in `tests/fixtures/sample_weather.csv` mirroring Open-Meteo hourly variables.
-- [ ] **Task 2.3**: Implement `backend/app/services/tabpfn_engine.py` with Prior Labs `TabPFNRegressor` and deterministic fallback heuristic.
-- [ ] **Task 2.4**: Implement Open-Meteo hourly weather telemetry fetcher with offline cache fallback.
-- [ ] **Task 2.5**: Write unit tests in `tests/test_tabpfn_engine.py` testing seeing score bounds, dew warnings, and offline fallback behavior.
-- [ ] **Task 2.6**: Run live tabular inference test on sample fixture and record evidence in [PROGRESS.md](PROGRESS.md).
+- [x] **Task 2.1**: Define forecast schemas in `backend/app/schemas/forecast_schema.py` (`WeatherTelemetry`, `SeeingForecastResponse`).
+- [x] **Task 2.2**: Create sample weather telemetry fixture in `tests/fixtures/sample_weather.csv` mirroring Open-Meteo hourly variables.
+- [x] **Task 2.3**: Implement `backend/app/services/tabpfn_engine.py` with Prior Labs `TabPFNRegressor` and deterministic fallback heuristic.
+- [x] **Task 2.4**: Implement Open-Meteo hourly weather telemetry fetcher with offline cache fallback.
+- [x] **Task 2.5**: Write unit tests in `tests/test_tabpfn_engine.py` testing seeing score bounds, dew warnings, and offline fallback behavior.
+- [x] **Task 2.6**: Run live tabular inference test on sample fixture and record evidence in [PROGRESS.md](PROGRESS.md).
 - [ ] 🔒 **Phase 2 Checkpoint**: Review TabPFN prediction behavior and fallback rules with Product Owner.
 
 ---
