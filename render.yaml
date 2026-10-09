@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: darksky-whisper
+    runtime: docker
+    region: oregon
+    plan: starter
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8000
+      - key: GEMMA_MODEL_ID
+        value: google/gemma-2-2b-it
+      - key: ELEVENLABS_VOICE_ID
+        value: 21m00Tcm4TlvDq8ikWAM
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "1.0"
+      # Secret API Keys (configured in Render Dashboard or env)
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: HUGGINGFACE_TOKEN
+        sync: false
+      - key: TABPFN_API_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false

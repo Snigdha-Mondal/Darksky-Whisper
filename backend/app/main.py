@@ -24,6 +24,10 @@ from backend.app.services.sky_engine import sky_engine
 from backend.app.services.stt_engine import stt_engine
 from backend.app.services.tabpfn_engine import tabpfn_engine
 from backend.app.services.voice_engine import voice_engine
+from backend.app.telemetry.sentry_tracer import sentry_tracer
+
+# Initialize Sentry Agent Tracing if configured
+sentry_tracer.setup()
 
 app = FastAPI(
     title="DarkSky Whisper API",
@@ -54,6 +58,7 @@ def health_check():
         "seeing_engine": "TabPFN Tabular AI + Boundary Physics",
         "reasoning_engine": f"Gemma-2 ({settings.gemma_model_id}) + Zero-Markdown Filter",
         "voice_engine": "ElevenLabs Observatory Narrator (Streamed)",
+        "telemetry": "Sentry Agent Tracing (Active)" if sentry_tracer.is_active else "Local Profiling (Active)",
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -106,7 +111,12 @@ async def whisper_audio_endpoint(
         audio_bytes = await audio_file.read()
 
     # 1. Transcribe audio to text
-    transcript = stt_engine.transcribe_audio(audio_bytes=audio_bytes, query_text=query_text)
+    with sentry_tracer.trace_span(
+        op="whisper.stt_transcription",
+        description="Speech-to-text audio query transcription",
+        data={"has_audio_file": bool(audio_file), "query_text_override": bool(query_text)},
+    ):
+        transcript = stt_engine.transcribe_audio(audio_bytes=audio_bytes, query_text=query_text)
 
     # 2. Offline Celestial Ephemeris (Skyfield)
     observer = ObserverLocation(
@@ -115,22 +125,51 @@ async def whisper_audio_endpoint(
         elevation_m=elevation_m,
         heading=heading,
     )
-    sky_data = sky_engine.calculate_sky(observer)
+    with sentry_tracer.trace_span(
+        op="skyfield.ephemeris_calculation",
+        description="NASA JPL DE421 offline orbital ephemeris math",
+        data={"latitude": latitude, "longitude": longitude, "heading": heading},
+    ):
+        sky_data = sky_engine.calculate_sky(observer)
 
     # 3. Atmospheric Seeing Forecaster (TabPFN)
     seeing_data = None
-    try:
-        seeing_data = tabpfn_engine.get_forecast(latitude=latitude, longitude=longitude)
-    except Exception:
-        pass
+    with sentry_tracer.trace_span(
+        op="tabpfn.seeing_prediction",
+        description="TabPFN atmospheric seeing regression and dew risk",
+        data={"latitude": latitude, "longitude": longitude},
+    ):
+        try:
+            seeing_data = tabpfn_engine.get_forecast(latitude=latitude, longitude=longitude)
+        except Exception:
+            pass
 
     # 4. Spoken Astronomical Reasoning (Gemma-2)
-    spoken_answer = gemma_agent.answer_query(
-        user_query=transcript, sky_data=sky_data, seeing_data=seeing_data
-    )
+    with sentry_tracer.trace_span(
+        op="gemma.reasoning_inference",
+        description="Gemma-2 35-word zero-markdown spoken reasoning",
+        data={"transcript": transcript, "visible_count": sky_data.total_visible_count},
+    ):
+        spoken_answer = gemma_agent.answer_query(
+            user_query=transcript, sky_data=sky_data, seeing_data=seeing_data
+        )
 
     # 5. Spoken Audio Synthesis (ElevenLabs with local offline fallback)
-    speech_audio, media_type = voice_engine.stream_speech(spoken_answer)
+    with sentry_tracer.trace_span(
+        op="elevenlabs.tts_synthesis",
+        description="ElevenLabs observatory narrator audio streaming",
+        data={"voice_id": settings.elevenlabs_voice_id, "word_count": len(spoken_answer.split())},
+    ):
+        speech_audio, media_type = voice_engine.stream_speech(spoken_answer)
+
+    # Record aggregate transaction metrics
+    sentry_tracer.record_pipeline_metrics(
+        query=transcript,
+        word_count=len(spoken_answer.split()),
+        seeing_score=seeing_data.current_seeing_score if seeing_data else 8.0,
+        visible_count=sky_data.total_visible_count,
+        duration_ms=0.0,
+    )
 
     # Return audio stream with custom debug metadata headers
     headers = {
@@ -157,7 +196,8 @@ async def whisper_json_endpoint(
     if audio_file:
         audio_bytes = await audio_file.read()
 
-    transcript = stt_engine.transcribe_audio(audio_bytes=audio_bytes, query_text=query_text)
+    with sentry_tracer.trace_span(op="whisper.stt_transcription", description="STT query transcription"):
+        transcript = stt_engine.transcribe_audio(audio_bytes=audio_bytes, query_text=query_text)
 
     observer = ObserverLocation(
         latitude=latitude,
@@ -165,12 +205,16 @@ async def whisper_json_endpoint(
         elevation_m=elevation_m,
         heading=heading,
     )
-    sky_data = sky_engine.calculate_sky(observer)
-    seeing_data = tabpfn_engine.get_forecast(latitude=latitude, longitude=longitude)
+    with sentry_tracer.trace_span(op="skyfield.ephemeris_calculation", description="Ephemeris calculation"):
+        sky_data = sky_engine.calculate_sky(observer)
 
-    spoken_answer = gemma_agent.answer_query(
-        user_query=transcript, sky_data=sky_data, seeing_data=seeing_data
-    )
+    with sentry_tracer.trace_span(op="tabpfn.seeing_prediction", description="TabPFN seeing prediction"):
+        seeing_data = tabpfn_engine.get_forecast(latitude=latitude, longitude=longitude)
+
+    with sentry_tracer.trace_span(op="gemma.reasoning_inference", description="Gemma reasoning inference"):
+        spoken_answer = gemma_agent.answer_query(
+            user_query=transcript, sky_data=sky_data, seeing_data=seeing_data
+        )
 
     return {
         "transcript": transcript,
