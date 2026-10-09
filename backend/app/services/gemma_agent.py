@@ -145,8 +145,50 @@ class GemmaAgent:
             else "notice the gentle twinkling through the atmospheric boundary layer"
         )
 
-        # 1. Query asks about the Moon
-        if "moon" in query_lower:
+        # 1. Atmospheric Seeing & Sky Clarity & Weather Queries
+        seeing_keywords = [
+            "clear", "clarity", "seeing", "weather", "atmosphere", "atmospheric",
+            "turbulen", "dew", "cloud", "transparent", "transparency", "condition",
+            "stargazing", "good night", "observe", "observing"
+        ]
+        known_planets_stars = [
+            "saturn", "jupiter", "mars", "venus", "mercury", "moon", "orion",
+            "sirius", "vega", "aldebaran", "betelgeuse", "rigel", "polaris", "pleiades"
+        ]
+        has_specific_target = any(name in query_lower for name in known_planets_stars)
+
+        if any(k in query_lower for k in seeing_keywords) and not has_specific_target:
+            score = seeing_data.current_seeing_score if seeing_data else 7.5
+            antoniadi_raw = (
+                seeing_data.current_antoniadi.value
+                if seeing_data and hasattr(seeing_data, "current_antoniadi")
+                else "II - Good seeing with slight tremors"
+            )
+            antoniadi_desc = antoniadi_raw.split(" - ")[-1].lower()
+            dew_risk = (
+                seeing_data.current_dew_risk.value
+                if seeing_data and hasattr(seeing_data, "current_dew_risk")
+                else "low"
+            )
+            peak_window = (
+                seeing_data.peak_observation_window.replace(" - ", " to ").split(" (")[0]
+                if seeing_data and seeing_data.peak_observation_window
+                else "tonight"
+            )
+
+            if dew_risk in ["critical", "high"]:
+                moisture_clause = "critical dew risk requires lens heaters tonight"
+            else:
+                moisture_clause = "dew risk is minimal across your optics"
+
+            return self.sanitize_for_speech(
+                f"Atmospheric seeing is rated {score:.1f} out of 10 with {antoniadi_desc}. "
+                f"The night sky is clear overhead, though {moisture_clause}. "
+                f"Prime viewing window begins around {peak_window}."
+            )
+
+        # 2. Query asks about the Moon
+        if "moon" in query_lower or "lunar" in query_lower:
             if sky_data.moon:
                 m = sky_data.moon
                 return self.sanitize_for_speech(
@@ -159,7 +201,18 @@ class GemmaAgent:
                     "The Moon is currently below the horizon, creating pitch-black skies that reveal faint stars and the Milky Way dust lanes."
                 )
 
-        # 2. Specific named target lookup (Jupiter, Saturn, Orion, Sirius, etc.)
+        # 3. Sky overview / Tour / Recommendations
+        overview_phrases = ["what can i see", "what should i look at", "what's visible", "what is visible", "tour", "recommend", "show me"]
+        if any(p in query_lower for p in overview_phrases):
+            top_bodies = [b.name.split(" (")[0] for b in targets[:3]]
+            bodies_text = ", ".join(top_bodies) if top_bodies else "Polaris"
+            return self.sanitize_for_speech(
+                f"Currently {len(targets)} celestial targets are above the horizon. "
+                f"Look up to spot {bodies_text}. "
+                f"Because {stability_phrase}, fainter clusters stand out clearly."
+            )
+
+        # 4. Specific named target lookup (visible above horizon)
         for body in sky_data.all_visible_bodies:
             body_name_lower = body.name.lower().split(" (")[0]
             if body_name_lower in query_lower:
@@ -168,7 +221,44 @@ class GemmaAgent:
                     f"Because {stability_phrase}, it shines with a calm, radiant glow."
                 )
 
-        # 3. Brightest object in field of view or sky ("what is that bright star/light?")
+        # 5. Check if user asked about a known celestial target that is below horizon
+        known_major_targets = {
+            "saturn": "Saturn",
+            "jupiter": "Jupiter",
+            "mars": "Mars",
+            "venus": "Venus",
+            "mercury": "Mercury",
+            "orion": "Orion",
+            "sirius": "Sirius",
+            "vega": "Vega",
+            "aldebaran": "Aldebaran",
+            "betelgeuse": "Betelgeuse",
+            "rigel": "Rigel",
+            "pleiades": "the Pleiades cluster",
+            "andromeda": "the Andromeda Galaxy",
+        }
+        for key, display_name in known_major_targets.items():
+            if key in query_lower:
+                return self.sanitize_for_speech(
+                    f"{display_name} is currently below your local horizon. "
+                    f"It will rise later in the night when your observation window opens."
+                )
+
+        # 6. Direction-specific inquiry (e.g. "in the east", "in the south")
+        for cardinal in ["east", "west", "north", "south", "southeast", "southwest", "northeast", "northwest", "overhead", "zenith"]:
+            if cardinal in query_lower:
+                directional_targets = [
+                    b for b in targets
+                    if cardinal in b.cardinal_direction.lower() or (cardinal in ["overhead", "zenith"] and b.altitude_deg > 60)
+                ]
+                if directional_targets:
+                    chosen = directional_targets[0]
+                    return self.sanitize_for_speech(
+                        f"Looking towards the {cardinal}, that bright beacon is {chosen.name}, {chosen.altitude_deg:.0f} degrees above the horizon. "
+                        f"Because {stability_phrase}, it shines with steady brilliance."
+                    )
+
+        # 7. Brightest object in field of view or sky ("what is that bright star/light?")
         if targets:
             brightest = targets[0]
             return self.sanitize_for_speech(
@@ -176,7 +266,7 @@ class GemmaAgent:
                 f"Because {stability_phrase}, it stands out vividly against the open sky."
             )
 
-        # 4. General night sky condition
+        # 8. General night sky fallback
         return self.sanitize_for_speech(
             f"You are looking at an open sky. "
             f"Because {stability_phrase}, look towards the horizon to identify the brightest navigational beacons."

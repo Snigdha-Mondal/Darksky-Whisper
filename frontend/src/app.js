@@ -58,6 +58,9 @@ class DarkSkyApp {
     document.querySelectorAll('.prompt-chip').forEach((chip) => {
       chip.addEventListener('click', (e) => {
         e.stopPropagation(); // Don't trigger full-screen tap
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.resume();
+        }
         const query = chip.getAttribute('data-query');
         if (query) {
           this.setState(State.COMPUTING);
@@ -76,6 +79,9 @@ class DarkSkyApp {
     window.addEventListener('pointerdown', (e) => {
       // Prevent double triggers
       e.preventDefault();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.resume();
+      }
       this.handleGlobalTap();
     });
   }
@@ -282,15 +288,8 @@ class DarkSkyApp {
     this.isSpeaking = true;
     this.setState(State.SPEAKING);
 
-    // Play subtle audio cue first
-    const cueUrl = URL.createObjectURL(audioCue);
-    this.audioSink.src = cueUrl;
-    this.audioSink.play().catch(() => {});
-
-    // Speak out loud with calm observatory narrator voice
-    this.audioSink.onended = () => {
-      this.speakText(spokenText);
-    };
+    // Speak out loud immediately with calm observatory voice
+    this.speakText(spokenText);
   }
 
   speakText(text) {
@@ -299,27 +298,53 @@ class DarkSkyApp {
       return;
     }
 
-    // Cancel any previous speech
+    // Cancel any previous speech and unpause engine
     window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
 
     const utterance = new SpeechSynthesisUtterance(text);
+    // Pin to global scope to prevent Chrome garbage-collection bug
+    window._darksky_utterance = utterance;
+    this.currentUtterance = utterance;
+
     utterance.rate = 0.92;   // Slightly measured, calm observatory cadence
     utterance.pitch = 0.85;  // Deeper, soothing campfire tone
 
     // Prefer a natural English voice if available
     const voices = window.speechSynthesis.getVoices();
-    const calmVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Male') || v.name.includes('David')));
+    const calmVoice = voices.find(v =>
+      v.lang.startsWith('en') &&
+      (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('David') || v.name.includes('Male'))
+    );
     if (calmVoice) {
       utterance.voice = calmVoice;
     }
 
+    utterance.onstart = () => {
+      this.isSpeaking = true;
+      this.setState(State.SPEAKING);
+    };
+
     utterance.onend = () => {
+      window._darksky_utterance = null;
       this.stopPlayback();
     };
 
-    utterance.onerror = () => {
+    utterance.onerror = (e) => {
+      console.warn('SpeechSynthesis error:', e);
+      window._darksky_utterance = null;
       this.stopPlayback();
     };
+
+    // Chrome keep-alive: Chrome pauses speech after ~14 seconds unless resume is called
+    if (this.speechInterval) clearInterval(this.speechInterval);
+    this.speechInterval = setInterval(() => {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.resume();
+      } else {
+        clearInterval(this.speechInterval);
+      }
+    }, 1500);
 
     window.speechSynthesis.speak(utterance);
   }
@@ -350,6 +375,10 @@ class DarkSkyApp {
 
   stopPlayback() {
     this.isSpeaking = false;
+    if (this.speechInterval) clearInterval(this.speechInterval);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     this.audioSink.pause();
     this.audioSink.currentTime = 0;
     this.setState(State.IDLE);
@@ -358,6 +387,14 @@ class DarkSkyApp {
   setupAudioSink() {
     // Enable background playback without muting
     this.audioSink.volume = 1.0;
+
+    // Warm up speech synthesis voices on startup
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
   }
 
   // --------------------------------------------------------------------------
