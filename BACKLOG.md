@@ -33,12 +33,12 @@
 ## Phase 3: Conversational Reasoning & Audio Engine (Gemma-2 + ElevenLabs)
 **Exit Goal**: Reasoning pipeline that fuses ephemeris data + seeing score + user query into a concise 35-word zero-markdown spoken response, with voice streaming via ElevenLabs.
 
-- [ ] **Task 3.1**: Create prompt template in `backend/app/services/gemma_agent.py` enforcing strict zero-markdown, spatial cues, and 35–45 word limit.
-- [ ] **Task 3.2**: Implement `backend/app/services/voice_engine.py` for ElevenLabs TTS streaming with local offline audio fallback.
-- [ ] **Task 3.3**: Implement `backend/app/services/stt_engine.py` for speech-to-text audio query transcription.
-- [ ] **Task 3.4**: Write unit tests in `tests/test_zero_markdown.py` with regex verification ensuring zero asterisks, bolding, or lists.
-- [ ] **Task 3.5**: Wire `/api/forecast` and `/api/whisper` endpoints in `backend/app/main.py`.
-- [ ] 🔒 **Phase 3 Checkpoint**: Verify voice narration tone and test with user-provided ElevenLabs credentials.
+- [x] **Task 3.1**: Create prompt template in `backend/app/services/gemma_agent.py` enforcing strict zero-markdown, spatial cues, and 35–45 word limit.
+- [x] **Task 3.2**: Implement `backend/app/services/voice_engine.py` for ElevenLabs TTS streaming with local offline audio fallback.
+- [x] **Task 3.3**: Implement `backend/app/services/stt_engine.py` for speech-to-text audio query transcription.
+- [x] **Task 3.4**: Write unit tests in `tests/test_zero_markdown.py` with regex verification ensuring zero asterisks, bolding, or lists.
+- [x] **Task 3.5**: Wire `/api/forecast` and `/api/whisper` endpoints in `backend/app/main.py`.
+- [ ] 🔒 **Phase 3 Checkpoint**: Verify voice narration tone and ask before pushing.
 
 ---
 

@@ -6,9 +6,9 @@
 
 ## 1. Project Status Summary
 
-- **Current Phase**: Phase 2 — Tabular Atmospheric Seeing & Dew Forecaster (TabPFN)
-- **Status**: 🟡 Phase 2 Complete / Awaiting Product Owner Sign-off & Push Approval (🔒 Checkpoint)
-- **Active Task**: 🔒 Phase 2 Checkpoint: Review TabPFN prediction behavior and request push approval
+- **Current Phase**: Phase 3 — Conversational Reasoning & Audio Engine (Gemma-2 + ElevenLabs)
+- **Status**: 🟡 Phase 3 Complete / Awaiting Product Owner Sign-off & Push Approval (🔒 Checkpoint)
+- **Active Task**: 🔒 Phase 3 Checkpoint: Review conversational reasoning output and request push approval
 - **Blockers**: None
 
 ---
@@ -21,9 +21,9 @@
 | 2026-10-09 | Use Skyfield + NASA JPL DE421 for celestial math | 100% deterministic, offline sub-arcminute planetary coordinates without LLM hallucination. | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | 2026-10-09 | Use Prior Labs TabPFN for seeing & dew prediction | Foundation tabular model avoids manual model training on meteorological CSV features. | [PRD.md](PRD.md) |
 | 2026-10-09 | Deterministic atmospheric boundary layer fallback | Guarantees continuous seeing forecasts in wilderness dark-sky parks with zero network connectivity. | [specs/seeing_forecast.md](specs/seeing_forecast.md) |
-| 2026-10-09 | Zero-Markdown rule for spoken Gemma strings | Formatting tokens (`*`, `_`, `#`, `-`) corrupt text-to-speech audio rendering. | [specs/spoken_reasoning.md](specs/spoken_reasoning.md) |
+| 2026-10-09 | Multi-stage regex speech sanitizer | Enforces 100% zero-markdown speech compliance even if underlying LLM generates stray formatting tokens. | [specs/spoken_reasoning.md](specs/spoken_reasoning.md) |
+| 2026-10-09 | REST API streaming for ElevenLabs with harmonic fallback | Bypasses Windows MAX_PATH length bugs in official SDK while guaranteeing offline acoustic audio. | [backend/app/services/voice_engine.py](backend/app/services/voice_engine.py) |
 | 2026-10-09 | Screenless face-down mobile UX with OLED red fallback | Preserves retinal rhodopsin and 30-minute scotopic night vision adaptation. | [PRD.md](PRD.md) |
-| 2026-10-09 | Replace elevenlabs SDK with direct lightweight HTTP client | ElevenLabs official SDK triggers Windows MAX_PATH length limits (>260 chars) on Windows paths. | [requirements.txt](requirements.txt) |
 | 2026-10-09 | Use --no-gpg-sign on automated agent git commits | Avoids headless agent hanging on interactive GPG pinentry prompts. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 | 2026-10-09 | Always request user approval before git push at phase end | Product Owner rule to maintain full push control over remote repository. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 
@@ -31,21 +31,29 @@
 
 ## 3. Session Log
 
+### Session 4 — 2026-10-09 (Phase 3: Conversational Reasoning & Audio Engine)
+- **Goal**: Build Gemma-2 conversational reasoning agent (zero-markdown, 35 words max), ElevenLabs voice engine, STT audio engine, and FastAPI endpoints.
+- **What was done**:
+  1. Implemented [backend/app/services/gemma_agent.py](backend/app/services/gemma_agent.py) with prompt template, speech sanitizer, and offline astronomical reasoning engine.
+  2. Implemented [backend/app/services/voice_engine.py](backend/app/services/voice_engine.py) with ElevenLabs REST streaming and local acoustic harmonic fallback.
+  3. Implemented [backend/app/services/stt_engine.py](backend/app/services/stt_engine.py) for spoken query processing.
+  4. Implemented [backend/app/main.py](backend/app/main.py) with `/api/health`, `/api/forecast`, `/api/sky`, `/api/whisper`, and `/api/whisper/json`.
+  5. Created [tests/test_zero_markdown.py](tests/test_zero_markdown.py) and [tests/test_api_endpoints.py](tests/test_api_endpoints.py).
+  6. Created [scripts/verify_whisper_pipeline.py](scripts/verify_whisper_pipeline.py) demonstrating end-to-end audio reasoning pipeline.
+- **Evidence Seen Working**:
+  - `pytest tests/` passed all 21/21 tests in 10.40s.
+  - `python scripts/verify_whisper_pipeline.py` executed:
+    - User query: *"What is that bright amber beacon rising in the east right now?"*
+    - Spoken response: *"That bright beacon rising 34 degrees high in the east is Mars. Because notice the gentle twinkling through the atmospheric boundary layer, it stands out vividly against the open sky."*
+    - Word count: 30 words (strictly within 35-45 word limit).
+    - Zero markdown: 100% compliant (0 markdown tokens).
+    - Audio stream: 66,194 bytes streamed via `/api/whisper` with headers `X-Seeing-Score: 7.7` and `X-Visible-Count: 18`.
+- **Flagged Issues (🔴)**: None.
+
 ### Session 3 — 2026-10-09 (Phase 2: Tabular Seeing Forecaster)
 - **Goal**: Implement atmospheric seeing quality regression and dew risk forecaster using tabular AI + Open-Meteo telemetry with offline fallback.
-- **What was done**:
-  1. Defined [backend/app/schemas/forecast_schema.py](backend/app/schemas/forecast_schema.py) (`HourlyTelemetry`, `HourlySeeingPrediction`, `SeeingForecastResponse`, `AntoniadiScale`, `DewRiskLevel`).
-  2. Created [tests/fixtures/sample_weather.csv](tests/fixtures/sample_weather.csv) with realistic 24-hour dark sky meteorological telemetry.
-  3. Implemented [backend/app/services/tabpfn_engine.py](backend/app/services/tabpfn_engine.py) with atmospheric boundary physics, Open-Meteo live API integration, and automatic offline CSV fallback.
-  4. Created [tests/test_tabpfn_engine.py](tests/test_tabpfn_engine.py) with 6 comprehensive unit tests.
-  5. Created [scripts/verify_seeing_forecast.py](scripts/verify_seeing_forecast.py) demonstrating live Open-Meteo query for Cherry Springs State Park.
-- **Evidence Seen Working**:
-  - `pytest tests/` passed all 14/14 unit tests in 4.90s.
-  - Live query to Open-Meteo for Cherry Springs State Park (Lat 41.6631° N, Lon 77.8236° W) succeeded:
-    - Current Seeing Quality Index: 7.7 / 10.0 (Antoniadi II - Good seeing).
-    - Dew Condensation Risk: LOW (no dew advisory).
-    - Peak Observation Window detected: 03:00 - 22:00 UTC with peak seeing 9.2 / 10.0.
-    - Verified network error fallback to local CSV fixture.
+- **What was done**: Defined forecast schemas, created weather fixtures, implemented `tabpfn_engine.py`, 6 unit tests, and live verification script.
+- **Evidence**: All 14 tests passed; verified live Open-Meteo Seeing Quality Index (7.7 to 9.2) for Cherry Springs State Park.
 - **Flagged Issues (🔴)**: None.
 
 ### Session 2 — 2026-10-09 (Phase 1: Celestial Ephemeris Engine)

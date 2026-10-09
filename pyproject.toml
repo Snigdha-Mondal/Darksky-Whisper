@@ -22,6 +22,8 @@ dependencies = [
     "scipy>=1.11.0",
     "requests>=2.31.0",
     "python-dotenv>=1.0.0",
+    "python-multipart>=0.0.9",
+    "pandas>=2.0.0",
     "tabpfn>=0.1.10; python_version < '3.13'",
     "sentry-sdk[fastapi]>=2.0.0",
 ]
