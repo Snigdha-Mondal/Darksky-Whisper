@@ -39,10 +39,13 @@
   4. Configured [frontend/public/manifest.json](frontend/public/manifest.json) for standalone PWA mobile installation.
   5. Mounted `/src` and `/public` static routes in [backend/app/main.py](backend/app/main.py).
   6. Created [tests/test_frontend_pwa.py](tests/test_frontend_pwa.py) covering 4 automated test cases.
+  7. Enhanced [frontend/src/app.js](frontend/src/app.js) with client-side Web Speech recognition, unpaused Web Speech API speech synthesis, persistent utterance references to eliminate Chrome GC drops, and immediate spoken narration so the phone speaks out loud even without a paid ElevenLabs key.
+  8. Upgraded [backend/app/services/gemma_agent.py](backend/app/services/gemma_agent.py) with dedicated astronomical seeing/clarity intent handling, directional lookups, below-horizon target notices, and zero-markdown formatting.
 - **Evidence Seen Working**:
-  - `pytest tests/` passed all 25/25 tests in 10.36s.
+  - `pytest tests/` passed all 25/25 tests in 9.54s.
   - Verified static file serving: GET `/`, GET `/src/style.css`, GET `/src/app.js`, and GET `/public/manifest.json` all return HTTP 200 with valid content.
   - Health check endpoint verified via `http://127.0.0.1:8000/api/health` returning 200 OK.
+  - Live query verification: "how clear is the sky today" correctly returns TabPFN Seeing Quality Index (2.5/10), Antoniadi classification, dew risk advisory, and optimal window.
 - **Flagged Issues (🔴)**: None.
 
 ### Session 4 — 2026-10-09 (Phase 3: Conversational Reasoning & Audio Engine)
