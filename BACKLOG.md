@@ -7,12 +7,12 @@
 ## Phase 1: Core Physics & Offline Ephemeris Engine (Skyfield)
 **Exit Goal**: A standalone, 100% offline Python engine that ingests `(latitude, longitude, timestamp)` and returns verified Altitude, Azimuth, and visibility for the Moon, 8 planets, major navigation stars, and seasonal constellations with $\pm 0.5^\circ$ accuracy.
 
-- [ ] **Task 1.1**: Initialize project scaffolding (`pyproject.toml`, `requirements.txt`, `.gitignore`, `.env.example`).
-- [ ] **Task 1.2**: Define Pydantic celestial schemas in `backend/app/schemas/sky_schema.py` (`CelestialBody`, `ObserverLocation`, `SkyFieldResponse`).
-- [ ] **Task 1.3**: Implement `backend/app/services/sky_engine.py` using Skyfield + NASA JPL DE421 ephemeris loader with local caching.
-- [ ] **Task 1.4**: Implement cardinal direction mapping, field-of-view filtering ($\pm 45^\circ$ heading), and horizon filtering ($\text{Alt} > 0^\circ$).
-- [ ] **Task 1.5**: Write unit tests in `tests/test_sky_engine.py` validating ephemeris calculations against known JPL horizons fixtures.
-- [ ] **Task 1.6**: Run end-to-end verification script and record live output evidence in [PROGRESS.md](PROGRESS.md).
+- [x] **Task 1.1**: Initialize project scaffolding (`pyproject.toml`, `requirements.txt`, `.gitignore`, `.env.example`).
+- [x] **Task 1.2**: Define Pydantic celestial schemas in `backend/app/schemas/sky_schema.py` (`CelestialBody`, `ObserverLocation`, `SkyFieldResponse`).
+- [x] **Task 1.3**: Implement `backend/app/services/sky_engine.py` using Skyfield + NASA JPL DE421 ephemeris loader with local caching.
+- [x] **Task 1.4**: Implement cardinal direction mapping, field-of-view filtering ($\pm 45^\circ$ heading), and horizon filtering ($\text{Alt} > 0^\circ$).
+- [x] **Task 1.5**: Write unit tests in `tests/test_sky_engine.py` validating ephemeris calculations against known JPL horizons fixtures.
+- [x] **Task 1.6**: Run end-to-end verification script and record live output evidence in [PROGRESS.md](PROGRESS.md).
 - [ ] 🔒 **Phase 1 Checkpoint**: Review Phase 1 test coverage and celestial accuracy with Product Owner.
 
 ---

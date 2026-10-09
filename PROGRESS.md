@@ -7,8 +7,8 @@
 ## 1. Project Status Summary
 
 - **Current Phase**: Phase 1 — Core Physics & Offline Ephemeris Engine (Skyfield)
-- **Status**: 🟢 System Initialized / Ready for Phase 1 Scaffolding
-- **Active Task**: Task 1.1 — Initialize project scaffolding (`pyproject.toml`, `requirements.txt`, `.gitignore`, `.env.example`)
+- **Status**: 🟡 Phase 1 Complete / Awaiting Product Owner Sign-off (🔒 Checkpoint)
+- **Active Task**: 🔒 Phase 1 Checkpoint: Review Phase 1 test coverage and celestial accuracy with Product Owner
 - **Blockers**: None
 
 ---
@@ -22,23 +22,37 @@
 | 2026-10-09 | Use Prior Labs TabPFN for seeing & dew prediction | Foundation tabular model avoids manual model training on meteorological CSV features. | [PRD.md](PRD.md) |
 | 2026-10-09 | Zero-Markdown rule for spoken Gemma strings | Formatting tokens (`*`, `_`, `#`, `-`) corrupt text-to-speech audio rendering. | [specs/spoken_reasoning.md](specs/spoken_reasoning.md) |
 | 2026-10-09 | Screenless face-down mobile UX with OLED red fallback | Preserves retinal rhodopsin and 30-minute scotopic night vision adaptation. | [PRD.md](PRD.md) |
+| 2026-10-09 | Replace elevenlabs SDK with direct lightweight HTTP client | ElevenLabs official SDK triggers Windows MAX_PATH length limits (>260 chars) on Windows paths. | [requirements.txt](requirements.txt) |
+| 2026-10-09 | Use --no-gpg-sign on automated agent git commits | Avoids headless agent hanging on interactive GPG pinentry prompts. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 
 ---
 
 ## 3. Session Log
 
+### Session 2 — 2026-10-09 (Phase 1: Celestial Ephemeris Engine)
+- **Goal**: Implement and verify 100% offline celestial ephemeris engine with Skyfield & NASA JPL DE421.
+- **What was done**:
+  1. Configured Python 3.13 `.venv` with `skyfield`, `numpy`, `scipy`, `pydantic`, `fastapi`, and `pytest`.
+  2. Implemented [backend/app/schemas/sky_schema.py](backend/app/schemas/sky_schema.py) (`CelestialBody`, `ObserverLocation`, `SkyFieldResponse`).
+  3. Implemented [backend/app/services/sky_engine.py](backend/app/services/sky_engine.py) using Skyfield with local JPL DE421 caching, 16-point cardinal mapping, and FOV filtering.
+  4. Created [tests/test_sky_engine.py](tests/test_sky_engine.py) covering 8 automated test cases.
+  5. Created [scripts/verify_ephemeris.py](scripts/verify_ephemeris.py) for real-world dark sky park verification.
+- **Evidence Seen Working**:
+  - `pytest tests/test_sky_engine.py` passed all 8/8 tests in 8.75s:
+    - Polaris altitude test confirmed matching observer latitude within 1.5 degrees.
+    - Horizon filtering strictly verified (`altitude > 0` for all returned bodies).
+    - Compass heading wraparound verified (e.g., 350° to 10° = 20°).
+    - Astronomical night threshold confirmed (Sun $\le -18^\circ$).
+  - `python scripts/verify_ephemeris.py` executed for Cherry Springs State Park (Lat 41.6631° N, Lon 77.8236° W) at 02:30 UTC:
+    - Sun altitude: -41.94° (Astronomical night: YES).
+    - Total visible bodies: 13. In field of view facing East: 5 (Pleiades at Alt 23.8°, Uranus at Alt 17.4°, Aldebaran at Alt 10.2°, Capella at Alt 22.1°, Saturn at Alt 40.5°).
+    - Top 5 brightest visible across sky: Vega (Mag +0.03), Capella (+0.08), Saturn (+0.36), Altair (+0.77), Aldebaran (+0.85).
+- **Flagged Issues (🔴)**: None.
+
 ### Session 1 — 2026-10-09 (System Bootstrapping)
 - **Goal**: Scaffold the complete DeftBench AI Agent Loop operating system for DarkSky Whisper.
-- **What was done**:
-  1. Copied and reviewed [DARKSKY_WHISPER_MASTER_GUIDE.md](DARKSKY_WHISPER_MASTER_GUIDE.md).
-  2. Created [CLAUDE.md](CLAUDE.md) front door pointer.
-  3. Authored [AGENTS.md](AGENTS.md) with 8 golden rules, fixed decisions, and document map.
-  4. Authored [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) establishing the 9-step loop, Ready/Done definitions, and stop signs.
-  5. Authored [PRD.md](PRD.md) specifying vision, personas, scope, and "Touch Grass" principles.
-  6. Authored [ARCHITECTURE.md](ARCHITECTURE.md) detailing high-level flow, division of labor, and components.
-  7. Authored [BACKLOG.md](BACKLOG.md) defining phased slices and 🔒 checkpoints.
-  8. Created `docs/` and `specs/` directories and indices.
-- **Evidence**: All 8 foundational documents generated and cross-referenced. Repo is ready for Phase 1.1 execution.
+- **What was done**: Created all foundational docs ([AGENTS.md](AGENTS.md), [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md), [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md), [BACKLOG.md](BACKLOG.md), [PROGRESS.md](PROGRESS.md), `specs/`, `docs/`).
+- **Evidence**: Initial commit created cleanly.
 - **Flagged Issues (🔴)**: None.
 
 ---
@@ -52,8 +66,7 @@
 ## 5. Notes for the Next Iteration
 
 > **Standard Boot Sequence for Next Session**:
-> 1. Read [AGENTS.md](AGENTS.md) (front door).
-> 2. Read [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) (operating manual).
-> 3. Read [PROGRESS.md](PROGRESS.md) (this file — memory).
-> 4. Open [BACKLOG.md](BACKLOG.md) and pick the next unblocked task (Phase 1, Task 1.1).
-> 5. Read only the specs touched by that task ([specs/ephemeris_engine.md](specs/ephemeris_engine.md)).
+> 1. Review 🔒 Phase 1 Checkpoint with Product Owner.
+> 2. Once approved, proceed to Phase 2: Tabular Atmospheric Seeing & Dew Forecaster (TabPFN).
+> 3. Active task will be **Task 2.1**: Define forecast schemas in `backend/app/schemas/forecast_schema.py`.
+
