@@ -68,9 +68,9 @@
 ## Phase 6: Gemma Fine-Tuning & Evaluation Benchmark (Tinker)
 **Exit Goal**: Benchmark dataset and automated evaluation script demonstrating token reduction and zero-markdown compliance.
 
-- [ ] **Task 6.1**: Curate 75 spoken astronomy interaction pairs in `benchmarks/dataset/spoken_astronomy_pairs.jsonl`.
-- [ ] **Task 6.2**: Implement `benchmarks/run_benchmark.py` comparing base Gemma-2 vs Tinker fine-tuned weights.
-- [ ] **Task 6.3**: Generate quantitative comparison report in `benchmarks/benchmark_results.md`.
+- [x] **Task 6.1**: Curate 75 spoken astronomy interaction pairs in `benchmarks/dataset/spoken_astronomy_pairs.jsonl`.
+- [x] **Task 6.2**: Implement `benchmarks/run_benchmark.py` comparing base Gemma-2 vs Tinker fine-tuned weights.
+- [x] **Task 6.3**: Generate quantitative comparison report in `benchmarks/benchmark_results.md`.
 - [ ] 🔒 **Phase 6 Checkpoint**: Review benchmark metrics and Tinker fine-tuning spend with Product Owner.
 
 ---

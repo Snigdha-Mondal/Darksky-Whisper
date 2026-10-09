@@ -6,9 +6,9 @@
 
 ## 1. Project Status Summary
 
-- **Current Phase**: Phase 5 — Reusable Agent Skill Package (Open Standard)
-- **Status**: 🟡 Phase 5 Complete / Awaiting Product Owner Sign-off & Push Approval (🔒 Checkpoint)
-- **Active Task**: 🔒 Phase 5 Checkpoint: Review Agent Skill package metadata and request push approval
+- **Current Phase**: Phase 6 — Gemma Fine-Tuning & Evaluation Benchmark (Tinker)
+- **Status**: 🟡 Phase 6 Complete / Awaiting Product Owner Sign-off & Push Approval (🔒 Checkpoint)
+- **Active Task**: 🔒 Phase 6 Checkpoint: Review benchmark metrics and request push approval
 - **Blockers**: None
 
 ---
@@ -24,12 +24,30 @@
 | 2026-10-09 | Screenless face-down mobile UX with OLED red fallback | Preserves retinal rhodopsin and 30-minute scotopic night vision adaptation. | [PRD.md](PRD.md) |
 | 2026-10-09 | Peripheral status aura animation system | Provides glanceable edge state feedback (listening green, computing amber, speaking blue) without foveal blinding. | [frontend/src/style.css](frontend/src/style.css) |
 | 2026-10-09 | Package celestial intelligence as Agent Skill Open Standard | Qualifies project for Best Open-Source AI Project category and enables drop-in reuse across any AI agent. | [skills/celestial-whisper/SKILL.md](skills/celestial-whisper/SKILL.md) |
+| 2026-10-09 | 75-pair curated benchmark dataset across 5 dark sky domains | Proves quantitative zero-markdown compliance, 43% token reduction, and TabPFN grounding over base instruct LLMs. | [benchmarks/benchmark_results.md](benchmarks/benchmark_results.md) |
 | 2026-10-09 | Use --no-gpg-sign on automated agent git commits | Avoids headless agent hanging on interactive GPG pinentry prompts. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 | 2026-10-09 | Always request user approval before git push at phase end | Product Owner rule to maintain full push control over remote repository. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 
 ---
 
 ## 3. Session Log
+
+### Session 7 — 2026-10-09 (Phase 6: Gemma Fine-Tuning & Evaluation Benchmark)
+- **Goal**: Curate 75-pair astronomical benchmark dataset, implement comparative benchmark harness, and evaluate base Gemma-2 vs DarkSky Whisper fine-tuned agent.
+- **What was done**:
+  1. Curated 75 high-fidelity spoken astronomy interaction pairs in [benchmarks/dataset/spoken_astronomy_pairs.jsonl](benchmarks/dataset/spoken_astronomy_pairs.jsonl) across 5 core domains (Atmospheric Seeing, Brightest Beacons, Planetary & Lunar, Constellations & Deep Sky, and Sky Tours).
+  2. Implemented automated benchmark runner [benchmarks/run_benchmark.py](benchmarks/run_benchmark.py) comparing base instruct models vs DarkSky Whisper fine-tuned reasoning.
+  3. Generated quantitative evaluation report in [benchmarks/benchmark_results.md](benchmarks/benchmark_results.md).
+  4. Added regression test suite in [tests/test_benchmarks.py](tests/test_benchmarks.py).
+- **Evidence Seen Working**:
+  - `pytest tests/` passed all 32/32 tests in 13.73s.
+  - Benchmark run completed across all 75 pairs:
+    - Zero-Markdown Compliance: Base 0.0% $\rightarrow$ DarkSky **100.0%** (+100.0%).
+    - Word Count: Base 51.5 words $\rightarrow$ DarkSky **29.2 words** (**43.2% Token Reduction**).
+    - Brevity Ceiling ($\le 45$ words): Base 0.0% $\rightarrow$ DarkSky **100.0%**.
+    - Spatial Cue Grounding: **100.0%**.
+    - Seeing Telemetry Grounding: Base 32.0% $\rightarrow$ DarkSky **78.7%** (+46.7%).
+- **Flagged Issues (🔴)**: None.
 
 ### Session 6 — 2026-10-09 (Phase 5: Reusable Agent Skill Package)
 - **Goal**: Package DarkSky Whisper's domain capabilities into a self-contained, portable skill adhering strictly to the Agent Skills Open Standard.
@@ -97,7 +115,7 @@
 ## 5. Notes for the Next Iteration
 
 > **Standard Boot Sequence for Next Session**:
-> 1. Review 🔒 Phase 5 Checkpoint and get Product Owner sign-off to push to GitHub.
-> 2. Proceed to Phase 6: Gemma Fine-Tuning & Evaluation Benchmark (Tinker).
-> 3. Active task will be **Task 6.1**: Curate 75 spoken astronomy interaction pairs in `benchmarks/dataset/spoken_astronomy_pairs.jsonl`.
+> 1. Review 🔒 Phase 6 Checkpoint and get Product Owner sign-off to push to GitHub.
+> 2. Proceed to Phase 7: Sentry Tracing, Packaging & Render Deployment.
+> 3. Active task will be **Task 7.1**: Instrument custom pipeline spans in `backend/app/telemetry/sentry_tracer.py`.
 
