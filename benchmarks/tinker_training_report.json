@@ -1,0 +1,307 @@
+{
+  "timestamp": "2026-10-09T15:21:50.120640+00:00",
+  "platform": "Thinking Machines Tinker API",
+  "console_url": "https://tinker.thinkingmachines.ai/sessions",
+  "remote_model_id": "0285615a-45f5-5062-bffd-f86fbe948d92:train:0",
+  "base_model": "Qwen/Qwen3.5-4B",
+  "lora_rank": 16,
+  "dataset_size": 75,
+  "epochs": 3,
+  "batch_size": 5,
+  "total_steps": 45,
+  "total_train_time_sec": 189.89,
+  "initial_loss": 75.4266,
+  "final_loss": 23.9063,
+  "loss_reduction_pct": 68.31,
+  "epoch_losses": [
+    75.4266,
+    43.78,
+    23.9063
+  ],
+  "step_history": [
+    {
+      "step": 1,
+      "epoch": 1,
+      "loss": 95.2955,
+      "latency_sec": 14.768
+    },
+    {
+      "step": 2,
+      "epoch": 1,
+      "loss": 96.8035,
+      "latency_sec": 5.91
+    },
+    {
+      "step": 3,
+      "epoch": 1,
+      "loss": 83.9244,
+      "latency_sec": 5.278
+    },
+    {
+      "step": 4,
+      "epoch": 1,
+      "loss": 89.5391,
+      "latency_sec": 4.899
+    },
+    {
+      "step": 5,
+      "epoch": 1,
+      "loss": 72.1372,
+      "latency_sec": 4.471
+    },
+    {
+      "step": 6,
+      "epoch": 1,
+      "loss": 74.114,
+      "latency_sec": 4.391
+    },
+    {
+      "step": 7,
+      "epoch": 1,
+      "loss": 78.3385,
+      "latency_sec": 5.956
+    },
+    {
+      "step": 8,
+      "epoch": 1,
+      "loss": 71.6654,
+      "latency_sec": 4.542
+    },
+    {
+      "step": 9,
+      "epoch": 1,
+      "loss": 70.8531,
+      "latency_sec": 5.048
+    },
+    {
+      "step": 10,
+      "epoch": 1,
+      "loss": 80.8004,
+      "latency_sec": 4.933
+    },
+    {
+      "step": 11,
+      "epoch": 1,
+      "loss": 69.2079,
+      "latency_sec": 3.393
+    },
+    {
+      "step": 12,
+      "epoch": 1,
+      "loss": 54.9801,
+      "latency_sec": 3.488
+    },
+    {
+      "step": 13,
+      "epoch": 1,
+      "loss": 62.9252,
+      "latency_sec": 3.68
+    },
+    {
+      "step": 14,
+      "epoch": 1,
+      "loss": 70.4132,
+      "latency_sec": 6.164
+    },
+    {
+      "step": 15,
+      "epoch": 1,
+      "loss": 60.4015,
+      "latency_sec": 3.437
+    },
+    {
+      "step": 16,
+      "epoch": 2,
+      "loss": 53.7556,
+      "latency_sec": 3.412
+    },
+    {
+      "step": 17,
+      "epoch": 2,
+      "loss": 47.9748,
+      "latency_sec": 3.667
+    },
+    {
+      "step": 18,
+      "epoch": 2,
+      "loss": 47.4597,
+      "latency_sec": 3.317
+    },
+    {
+      "step": 19,
+      "epoch": 2,
+      "loss": 51.1331,
+      "latency_sec": 3.523
+    },
+    {
+      "step": 20,
+      "epoch": 2,
+      "loss": 40.5899,
+      "latency_sec": 4.958
+    },
+    {
+      "step": 21,
+      "epoch": 2,
+      "loss": 56.6796,
+      "latency_sec": 3.509
+    },
+    {
+      "step": 22,
+      "epoch": 2,
+      "loss": 44.9993,
+      "latency_sec": 3.348
+    },
+    {
+      "step": 23,
+      "epoch": 2,
+      "loss": 38.9365,
+      "latency_sec": 3.321
+    },
+    {
+      "step": 24,
+      "epoch": 2,
+      "loss": 41.5176,
+      "latency_sec": 3.215
+    },
+    {
+      "step": 25,
+      "epoch": 2,
+      "loss": 39.0082,
+      "latency_sec": 3.45
+    },
+    {
+      "step": 26,
+      "epoch": 2,
+      "loss": 35.5392,
+      "latency_sec": 4.846
+    },
+    {
+      "step": 27,
+      "epoch": 2,
+      "loss": 35.2859,
+      "latency_sec": 3.59
+    },
+    {
+      "step": 28,
+      "epoch": 2,
+      "loss": 44.6283,
+      "latency_sec": 3.529
+    },
+    {
+      "step": 29,
+      "epoch": 2,
+      "loss": 40.821,
+      "latency_sec": 3.355
+    },
+    {
+      "step": 30,
+      "epoch": 2,
+      "loss": 38.3719,
+      "latency_sec": 3.459
+    },
+    {
+      "step": 31,
+      "epoch": 3,
+      "loss": 24.9201,
+      "latency_sec": 3.861
+    },
+    {
+      "step": 32,
+      "epoch": 3,
+      "loss": 28.5657,
+      "latency_sec": 4.834
+    },
+    {
+      "step": 33,
+      "epoch": 3,
+      "loss": 20.7252,
+      "latency_sec": 3.688
+    },
+    {
+      "step": 34,
+      "epoch": 3,
+      "loss": 23.8703,
+      "latency_sec": 3.207
+    },
+    {
+      "step": 35,
+      "epoch": 3,
+      "loss": 27.3534,
+      "latency_sec": 4.146
+    },
+    {
+      "step": 36,
+      "epoch": 3,
+      "loss": 26.9568,
+      "latency_sec": 3.437
+    },
+    {
+      "step": 37,
+      "epoch": 3,
+      "loss": 24.2106,
+      "latency_sec": 3.442
+    },
+    {
+      "step": 38,
+      "epoch": 3,
+      "loss": 29.6412,
+      "latency_sec": 3.232
+    },
+    {
+      "step": 39,
+      "epoch": 3,
+      "loss": 20.4138,
+      "latency_sec": 3.414
+    },
+    {
+      "step": 40,
+      "epoch": 3,
+      "loss": 26.0992,
+      "latency_sec": 4.209
+    },
+    {
+      "step": 41,
+      "epoch": 3,
+      "loss": 17.1587,
+      "latency_sec": 3.44
+    },
+    {
+      "step": 42,
+      "epoch": 3,
+      "loss": 16.848,
+      "latency_sec": 3.337
+    },
+    {
+      "step": 43,
+      "epoch": 3,
+      "loss": 30.7304,
+      "latency_sec": 3.284
+    },
+    {
+      "step": 44,
+      "epoch": 3,
+      "loss": 20.7989,
+      "latency_sec": 3.594
+    },
+    {
+      "step": 45,
+      "epoch": 3,
+      "loss": 20.3023,
+      "latency_sec": 3.456
+    }
+  ],
+  "sample_evaluations": [
+    {
+      "query": "How clear is the sky tonight?",
+      "context": "Location: Cherry Springs, Seeing: 8.8/10, Dew: low",
+      "generated_speech": "Atmospheric seeing is rated 8.8 out of 10 with pristine stability. The night sky is clear above the horizon with minimal thermal turbulence, ideal for resolving fine planetary details.",
+      "word_count": 29
+    },
+    {
+      "query": "What is that bright orange beacon rising in the east?",
+      "context": "Object: Aldebaran, Altitude: 24 deg, Cardinal: East",
+      "generated_speech": "Rising 24 degrees above the eastern horizon, that luminous orange beacon is Aldebaran, the guiding eye of Orion. In calm atmospheric seeing, it shines with a steady, warm amber light.",
+      "word_count": 30
+    }
+  ]
+}

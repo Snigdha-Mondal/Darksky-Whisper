@@ -29,10 +29,30 @@
 | 2026-10-09 | Multi-stage production Docker container with offline DE421 cache | Guarantees instant cold-start sub-second response without external ephemeris network dependency. | [Dockerfile](Dockerfile) |
 | 2026-10-09 | Use --no-gpg-sign on automated agent git commits | Avoids headless agent hanging on interactive GPG pinentry prompts. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 | 2026-10-09 | Always request user approval before git push at phase end | Product Owner rule to maintain full push control over remote repository. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
+| 2026-10-09 | Use Thinking Machines Tinker API for distributed LoRA tuning | Offloads forward-backward and AdamW passes to remote GPU cluster while masking prompts and enforcing 35-word zero-markdown speech. | [scripts/train_tinker_lora.py](scripts/train_tinker_lora.py) |
 
 ---
 
 ## 3. Session Log
+
+### Session 9 — 2026-10-09 (Tinker API Integration: Distributed LoRA Fine-Tuning)
+- **Goal**: Integrate Thinking Machines Tinker API for Hacktoberfest "Best Use of Tinker" ($200) category, fine-tuning Qwen/Qwen3.5-4B LoRA adapter on 75 curated spoken astronomy pairs.
+- **What was done**:
+  1. Installed `tinker-0.33.1` and `tml-renderers`.
+  2. Implemented [scripts/train_tinker_lora.py](scripts/train_tinker_lora.py) with dynamic prompt loss masking (`weights=0.0` on prompt, `1.0` on completion).
+  3. Allocated remote LoRA rank-16 training actor on Thinking Machines GPU cluster (`0285615a-45f5-5062-bffd-f86fbe948d92:train:0`).
+  4. Executed distributed training across 3 epochs (45 optimization steps):
+     - Initial Loss: `75.4266`
+     - Final Loss: `23.9063`
+     - Net Convergence: **68.31% Loss Reduction**.
+  5. Deployed weights to Tinker `SamplingClient` and verified live zero-markdown spoken responses with immediate spatial and seeing cues.
+  6. Saved full benchmark report to [benchmarks/tinker_training_report.json](benchmarks/tinker_training_report.json).
+  7. Updated [docs/devto-submission-draft.md](docs/devto-submission-draft.md), [README.md](README.md), and [.env.example](.env.example).
+- **Evidence Seen Working**:
+  - `python scripts/train_tinker_lora.py` completed with exit code 0.
+  - Tinker Console URL: `https://tinker.thinkingmachines.ai/sessions`.
+  - All 32/32 unit & integration tests pass cleanly (`pytest tests/ -v`).
+- **Flagged Issues (🔴)**: None.
 
 ### Session 8 — 2026-10-09 (Phase 7: Sentry Tracing, Packaging & Render Deployment)
 - **Goal**: Implement Sentry Agent Tracing instrumentation, multi-stage production Dockerfile, render.yaml deployment manifest, comprehensive README.md, and DEV.to submission draft.

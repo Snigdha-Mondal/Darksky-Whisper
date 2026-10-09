@@ -52,6 +52,7 @@ graph TD
 | **Client Interface** | Screenless Mobile PWA | Single-tap anywhere zero-aim listener, peripheral status aura rings, and OLED deep red safeguard (`#1a0505`). |
 | **Agent Skill Package** | [Agent Skills Open Standard](skills/celestial-whisper/SKILL.md) | Modular, drop-in reusable astronomical intelligence skill package. |
 | **Observability** | [Sentry Agent Tracing](https://sentry.io/) | Full waterfall span visibility across ephemeris, seeing prediction, reasoning, and audio synthesis. |
+| **LoRA Fine-Tuning** | [Thinking Machines Tinker](https://tinker.thinkingmachines.ai/) | Distributed remote GPU LoRA optimization (68.3% loss reduction) enforcing zero-markdown spoken brevity. |
 
 ---
 
@@ -68,7 +69,8 @@ Tested across **75 curated ground-truth interaction pairs** in `benchmarks/datas
 | **Atmospheric Seeing Grounding** | 32.0% | **78.7%** | **+46.7%** (Live TabPFN telemetry integration) |
 | **Average Response Latency** | 45.0 ms | **0.1 ms** | **44.9 ms faster delivery** |
 
-*Full report available at [benchmarks/benchmark_results.md](benchmarks/benchmark_results.md).*
+*Full benchmark report at [benchmarks/benchmark_results.md](benchmarks/benchmark_results.md).*  
+*Tinker distributed LoRA training report (68.3% loss reduction) at [benchmarks/tinker_training_report.json](benchmarks/tinker_training_report.json).*
 
 ---
 

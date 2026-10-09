@@ -71,6 +71,7 @@
 - [x] **Task 6.1**: Curate 75 spoken astronomy interaction pairs in `benchmarks/dataset/spoken_astronomy_pairs.jsonl`.
 - [x] **Task 6.2**: Implement `benchmarks/run_benchmark.py` comparing base Gemma-2 vs Tinker fine-tuned weights.
 - [x] **Task 6.3**: Generate quantitative comparison report in `benchmarks/benchmark_results.md`.
+- [x] **Task 6.4**: Execute remote distributed LoRA fine-tuning run on Thinking Machines Tinker API (`scripts/train_tinker_lora.py`), achieving 68.3% loss reduction and saving results to `benchmarks/tinker_training_report.json`.
 - [ ] 🔒 **Phase 6 Checkpoint**: Review benchmark metrics and Tinker fine-tuning spend with Product Owner.
 
 ---

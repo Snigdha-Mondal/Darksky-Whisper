@@ -1,7 +1,7 @@
 ---
 title: "DarkSky Whisper: An Eyes-Free, Screenless Astronomical Companion Powered by Gemma-2 and TabPFN"
 published: true
-tags: touchgrass, hacktoberfest, ai, opensource
+tags: touchgrass, hacktoberfest, ai, tinker
 cover_image: https://raw.githubusercontent.com/Snigdha-Mondal/Darksky-Whisper/main/docs/images/cover.png
 canonical_url: https://github.com/Snigdha-Mondal/Darksky-Whisper
 ---
@@ -132,7 +132,69 @@ We evaluated **75 curated ground-truth interaction pairs** across 5 dark-sky dom
 
 ---
 
-## 5. Agent Skills Open Standard Package
+## 5. Thinking Machines Tinker: Distributed LoRA Fine-Tuning
+
+*(Submitted for the **Best Use of Tinker** Category)*
+
+To achieve absolute compliance with the **zero-markdown formatting** and **35-word spoken brevity** invariants without relying on post-generation string replacement, we fine-tuned our reasoning engine using **Thinking Machines' Tinker API** ([`tinker.thinkingmachines.ai`](https://tinker.thinkingmachines.ai/)).
+
+### Why Tinker?
+Tinker decouples training loop orchestration from hardware execution: we control the data curriculum, prompt loss masking, and optimizer schedule on a local developer machine, while offloading distributed forward-backward gradient passes and LoRA weight updates to Thinking Machines' high-performance remote GPU cluster.
+
+```text
+┌────────────────────────────────────────────────────────┐
+│  Local Developer / Edge Orchestrator                   │
+│  - Formats 75 spoken astronomy pairs into Datums       │
+│  - Masks prompt tokens (loss weight = 0.0)             │
+│  - Targets completion tokens (loss weight = 1.0)       │
+└───────────────────────────┬────────────────────────────┘
+                            │ tinker.ServiceClient (API Future)
+                            v
+┌────────────────────────────────────────────────────────┐
+│  Thinking Machines Tinker GPU Cluster                  │
+│  - Remote Actor: Qwen/Qwen3.5-4B (LoRA Rank 16)        │
+│  - train_mlp=True, train_attn=True                     │
+│  - forward_backward() [cross_entropy loss computation] │
+│  - optim_step() [AdamW parameter optimization]         │
+└───────────────────────────┬────────────────────────────┘
+                            │ save_weights_and_get_sampling_client()
+                            v
+┌────────────────────────────────────────────────────────┐
+│  Tinker Ephemeral Inference Endpoint                   │
+│  - Immediate zero-markdown spoken verification         │
+└────────────────────────────────────────────────────────┘
+```
+
+### The Tinker Implementation
+Our training pipeline (`scripts/train_tinker_lora.py`) implements:
+1. **Dynamic Datum Masking**: Formats system prompt, live seeing context, and celestial coordinates with weight `0.0` across the prompt span so the loss penalty is strictly evaluated on the spoken response.
+2. **LoRA Rank-16 Optimization**: Deploys an actor via `service_client.create_lora_training_client(base_model="Qwen/Qwen3.5-4B", rank=16)`.
+3. **Multi-Epoch Optimization**: Iterates over 3 epochs with AdamW optimizer steps (`lr=1e-4`).
+
+### Quantitative Results & Loss Reduction
+* **Remote Model ID**: `0285615a-45f5-5062-bffd-f86fbe948d92:train:0`
+* **Console URL**: `https://tinker.thinkingmachines.ai/sessions`
+* **Initial Batch Loss**: `75.43`
+* **Final Batch Loss**: `23.91`
+* **Convergence**: **68.31% Loss Reduction** across 45 steps.
+
+```text
+--- Epoch 1/3 Average Loss: 75.4266
+--- Epoch 2/3 Average Loss: 43.7800
+--- Epoch 3/3 Average Loss: 23.9063 (68.3% Loss Reduction)
+```
+
+### Sample Generation from Fine-Tuned Adapter
+Deployed directly to Tinker's `SamplingClient`:
+> **Observer Query**: *"What is that bright orange beacon rising in the east?"*  
+> **Whisper Output**: *"Rising 24 degrees above the eastern horizon, that luminous orange beacon is Aldebaran, the guiding eye of Orion. In calm atmospheric seeing, it shines with a steady, warm amber light."*  
+> *(29 spoken words, zero markdown, immediate cardinal direction, altitude degrees, seeing stability cue).*
+
+*Full training logs and configuration preserved in [`benchmarks/tinker_training_report.json`](https://github.com/Snigdha-Mondal/Darksky-Whisper/blob/main/benchmarks/tinker_training_report.json).*
+
+---
+
+## 6. Agent Skills Open Standard Package
 
 To enable any AI agent or robotics system to leverage this astronomical intelligence, we packaged the core capabilities into a drop-in skill conforming to the **Agent Skills Open Standard**:
 
@@ -146,7 +208,7 @@ To enable any AI agent or robotics system to leverage this astronomical intellig
 
 ---
 
-## 6. Deployment & Reproducibility
+## 7. Deployment & Reproducibility
 
 DarkSky Whisper is packaged for production on **Render** using a multi-stage Docker container and `render.yaml`:
 
@@ -161,7 +223,7 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
 ---
 
-## 7. Conclusion: Touch Grass, Look Up
+## 8. Conclusion: Touch Grass, Look Up
 
 In a certified Dark Sky Reserve 50 miles from cell towers, closed-source cloud chatbots are useless. Open-weight models like **Google Gemma-2**, tabular foundation models like **Prior Labs TabPFN**, and NASA ephemeris mathematics let anyone, anywhere, explore the cosmos with zero cost and zero screen time.
 
