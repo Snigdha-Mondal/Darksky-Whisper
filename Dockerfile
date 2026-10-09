@@ -37,12 +37,13 @@ COPY frontend/ ./frontend/
 COPY data/ ./data/
 COPY skills/ ./skills/
 COPY benchmarks/ ./benchmarks/
-COPY de421.bsp ./de421.bsp
 COPY pyproject.toml ./pyproject.toml
 COPY LICENSE ./LICENSE
 
-# Ensure ephemeris file is discoverable
-RUN mkdir -p data/ephemeris && cp de421.bsp data/ephemeris/de421.bsp
+# Download and cache NASA JPL DE421 ephemeris kernel
+RUN mkdir -p data/ephemeris && \
+    curl -fsSL https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de421.bsp -o data/ephemeris/de421.bsp && \
+    cp data/ephemeris/de421.bsp ./de421.bsp
 
 EXPOSE 8000
 
