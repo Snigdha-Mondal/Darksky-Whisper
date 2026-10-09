@@ -10,7 +10,10 @@
 [![TabPFN](https://img.shields.io/badge/Prior_Labs-TabPFN-purple.svg)](https://github.com/priorlabs/TabPFN)
 [![Gemma-2](https://img.shields.io/badge/Google-Gemma--2-orange.svg)](https://ai.google.dev/gemma)
 [![Sentry](https://img.shields.io/badge/Sentry-Agent_Tracing-red.svg)](https://docs.sentry.io)
-[![Render](https://img.shields.io/badge/Deploy-Render-black.svg)](https://render.com)
+[![Render Live](https://img.shields.io/badge/Live_Demo-Render-brightgreen.svg)](https://darksky-whisper-vh7w.onrender.com/)
+
+> 🌌 **Live Web Application**: [https://darksky-whisper-vh7w.onrender.com/](https://darksky-whisper-vh7w.onrender.com/)  
+> 🏥 **Health & Telemetry**: [https://darksky-whisper-vh7w.onrender.com/api/health](https://darksky-whisper-vh7w.onrender.com/api/health)
 
 ---
 
@@ -142,13 +145,15 @@ DarkSky Whisper includes a self-contained skill conforming to the **Agent Skills
 
 ## 8. Deployment to Render
 
-This repository includes a production `render.yaml` manifest:
+* 🚀 **Live Production Service**: [https://darksky-whisper-vh7w.onrender.com/](https://darksky-whisper-vh7w.onrender.com/)
+* 🏥 **Real-Time Health Status**: [https://darksky-whisper-vh7w.onrender.com/api/health](https://darksky-whisper-vh7w.onrender.com/api/health)
+
+This repository includes a production `Dockerfile` and `render.yaml` manifest:
 
 1. Connect your GitHub repository to [Render](https://render.com).
-2. Click **New +** $\rightarrow$ **Blueprint**.
-3. Select `render.yaml`.
-4. Add environment secrets (`ELEVENLABS_API_KEY`, `HUGGINGFACE_TOKEN`, `TABPFN_API_KEY`, `SENTRY_DSN`) in the Render Dashboard.
-5. Deploy service!
+2. Click **New +** $\rightarrow$ **Web Service** (or **Blueprint**).
+3. Select Docker runtime and free compute tier.
+4. Deploy!
 
 ---
 

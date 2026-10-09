@@ -210,7 +210,11 @@ To enable any AI agent or robotics system to leverage this astronomical intellig
 
 ## 7. Deployment & Reproducibility
 
-DarkSky Whisper is packaged for production on **Render** using a multi-stage Docker container and `render.yaml`:
+DarkSky Whisper is deployed live on **Render**:
+* 🚀 **Live Web Application**: [https://darksky-whisper-vh7w.onrender.com/](https://darksky-whisper-vh7w.onrender.com/)
+* 🏥 **Real-Time Health Status**: [https://darksky-whisper-vh7w.onrender.com/api/health](https://darksky-whisper-vh7w.onrender.com/api/health)
+
+To run or test locally:
 
 ```bash
 # Clone and test locally
@@ -227,6 +231,7 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
 In a certified Dark Sky Reserve 50 miles from cell towers, closed-source cloud chatbots are useless. Open-weight models like **Google Gemma-2**, tabular foundation models like **Prior Labs TabPFN**, and NASA ephemeris mathematics let anyone, anywhere, explore the cosmos with zero cost and zero screen time.
 
+* 🚀 **Live Demo**: [https://darksky-whisper-vh7w.onrender.com/](https://darksky-whisper-vh7w.onrender.com/)
 * 🌌 **GitHub Repository**: [https://github.com/Snigdha-Mondal/Darksky-Whisper](https://github.com/Snigdha-Mondal/Darksky-Whisper)
 * 📜 **License**: Apache-2.0
 * 🛰️ **Built for**: Touch Grass Hackathon

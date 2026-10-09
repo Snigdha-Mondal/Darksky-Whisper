@@ -7,8 +7,8 @@
 ## 1. Project Status Summary
 
 - **Current Phase**: Phase 7 — Sentry Tracing, Packaging & Render Deployment
-- **Status**: 🟢 Project Complete / Ready for Final Push & Publication (🔒 Checkpoint)
-- **Active Task**: 🔒 Phase 7 Checkpoint: Product Owner authorization to deploy to Render and publish repository
+- **Status**: 🟢 100% Complete & Live on Render (`https://darksky-whisper-vh7w.onrender.com/`)
+- **Active Task**: Publish DEV.to Hackathon submission post from `docs/devto-submission-draft.md`
 - **Blockers**: None
 
 ---
@@ -34,6 +34,20 @@
 ---
 
 ## 3. Session Log
+
+### Session 10 — 2026-10-10 (Live Render Deployment & Public Web Service Verification)
+- **Goal**: Deploy containerized FastAPI application to Render on free compute plan and verify public endpoints.
+- **What was done**:
+  1. Resolved Docker build ephemeris loading by fetching NASA JPL DE421 kernel via curl during build and removing redundant `COPY data/`.
+  2. Configured and deployed Render Web Service: `darksky-whisper-vh7w`.
+  3. Verified live public endpoints:
+     - Root Web App: `https://darksky-whisper-vh7w.onrender.com/`
+     - Health API: `https://darksky-whisper-vh7w.onrender.com/api/health`
+  4. Updated [README.md](README.md), [docs/devto-submission-draft.md](docs/devto-submission-draft.md), and [PROGRESS.md](PROGRESS.md) with live URLs.
+- **Evidence Seen Working**:
+  - Live GET request to `https://darksky-whisper-vh7w.onrender.com/api/health` returned HTTP 200 with JSON:
+    `{'status': 'healthy', 'version': '0.1.0', 'ephemeris_engine': 'Skyfield NASA JPL DE421 (100% Offline)', 'seeing_engine': 'TabPFN Tabular AI + Boundary Physics', 'reasoning_engine': 'Gemma-2 (google/gemma-2-2b-it) + Zero-Markdown Filter', 'voice_engine': 'ElevenLabs Observatory Narrator (Streamed)', 'telemetry': 'Local Profiling (Active)'}`
+- **Flagged Issues (🔴)**: None.
 
 ### Session 9 — 2026-10-09 (Tinker API Integration: Distributed LoRA Fine-Tuning)
 - **Goal**: Integrate Thinking Machines Tinker API for Hacktoberfest "Best Use of Tinker" ($200) category, fine-tuning Qwen/Qwen3.5-4B LoRA adapter on 75 curated spoken astronomy pairs.
