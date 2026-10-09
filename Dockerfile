@@ -34,7 +34,6 @@ ENV APP_ENV=production
 # Copy application artifacts
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
-COPY data/ ./data/
 COPY skills/ ./skills/
 COPY benchmarks/ ./benchmarks/
 COPY pyproject.toml ./pyproject.toml
