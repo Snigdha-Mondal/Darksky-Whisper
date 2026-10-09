@@ -57,10 +57,10 @@
 ## Phase 5: Reusable Agent Skill Package (Open Standard)
 **Exit Goal**: Self-contained `skills/celestial-whisper` package conforming to the Agent Skills Open Standard.
 
-- [ ] **Task 5.1**: Author `skills/celestial-whisper/SKILL.md` with YAML frontmatter, procedures, and hard rules.
-- [ ] **Task 5.2**: Add reference guides in `skills/celestial-whisper/references/` (`constellations.md`, `seeing-scale.md`).
-- [ ] **Task 5.3**: Add verification utility script in `skills/celestial-whisper/scripts/verify_ephemeris.py`.
-- [ ] **Task 5.4**: Run automated validation against Agent Skills specification.
+- [x] **Task 5.1**: Author `skills/celestial-whisper/SKILL.md` with YAML frontmatter, procedures, and hard rules.
+- [x] **Task 5.2**: Add reference guides in `skills/celestial-whisper/references/` (`constellations.md`, `seeing-scale.md`).
+- [x] **Task 5.3**: Add verification utility script in `skills/celestial-whisper/scripts/verify_ephemeris.py`.
+- [x] **Task 5.4**: Run automated validation against Agent Skills specification.
 - [ ] 🔒 **Phase 5 Checkpoint**: Review Agent Skill package metadata and open-source licensing.
 
 ---
