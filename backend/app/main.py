@@ -185,9 +185,14 @@ async def whisper_json_endpoint(
     }
 
 
-# Static frontend files (if frontend build or static directory exists)
+# Static frontend files
 if FRONTEND_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+    src_dir = FRONTEND_DIR / "src"
+    public_dir = FRONTEND_DIR / "public"
+    if src_dir.exists():
+        app.mount("/src", StaticFiles(directory=str(src_dir)), name="src")
+    if public_dir.exists():
+        app.mount("/public", StaticFiles(directory=str(public_dir)), name="public")
 
     @app.get("/")
     def serve_frontend_root():

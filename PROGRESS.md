@@ -6,9 +6,9 @@
 
 ## 1. Project Status Summary
 
-- **Current Phase**: Phase 3 — Conversational Reasoning & Audio Engine (Gemma-2 + ElevenLabs)
-- **Status**: 🟡 Phase 3 Complete / Awaiting Product Owner Sign-off & Push Approval (🔒 Checkpoint)
-- **Active Task**: 🔒 Phase 3 Checkpoint: Review conversational reasoning output and request push approval
+- **Current Phase**: Phase 4 — Screenless Zero-Aim Mobile PWA Client
+- **Status**: 🟡 Phase 4 Complete / Awaiting Product Owner Sign-off & Push Approval (🔒 Checkpoint)
+- **Active Task**: 🔒 Phase 4 Checkpoint: Review screenless mobile PWA and request push approval
 - **Blockers**: None
 
 ---
@@ -20,10 +20,9 @@
 | 2026-10-09 | Adopt DeftBench AI Agent Loop architecture | Ensures structured autonomous iterations, strict memory persistence, and clear human checkpoints. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 | 2026-10-09 | Use Skyfield + NASA JPL DE421 for celestial math | 100% deterministic, offline sub-arcminute planetary coordinates without LLM hallucination. | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | 2026-10-09 | Use Prior Labs TabPFN for seeing & dew prediction | Foundation tabular model avoids manual model training on meteorological CSV features. | [PRD.md](PRD.md) |
-| 2026-10-09 | Deterministic atmospheric boundary layer fallback | Guarantees continuous seeing forecasts in wilderness dark-sky parks with zero network connectivity. | [specs/seeing_forecast.md](specs/seeing_forecast.md) |
 | 2026-10-09 | Multi-stage regex speech sanitizer | Enforces 100% zero-markdown speech compliance even if underlying LLM generates stray formatting tokens. | [specs/spoken_reasoning.md](specs/spoken_reasoning.md) |
-| 2026-10-09 | REST API streaming for ElevenLabs with harmonic fallback | Bypasses Windows MAX_PATH length bugs in official SDK while guaranteeing offline acoustic audio. | [backend/app/services/voice_engine.py](backend/app/services/voice_engine.py) |
 | 2026-10-09 | Screenless face-down mobile UX with OLED red fallback | Preserves retinal rhodopsin and 30-minute scotopic night vision adaptation. | [PRD.md](PRD.md) |
+| 2026-10-09 | Peripheral status aura animation system | Provides glanceable edge state feedback (listening green, computing amber, speaking blue) without foveal blinding. | [frontend/src/style.css](frontend/src/style.css) |
 | 2026-10-09 | Use --no-gpg-sign on automated agent git commits | Avoids headless agent hanging on interactive GPG pinentry prompts. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 | 2026-10-09 | Always request user approval before git push at phase end | Product Owner rule to maintain full push control over remote repository. | [ENGINEERING_PLAYBOOK.md](ENGINEERING_PLAYBOOK.md) |
 
@@ -31,23 +30,25 @@
 
 ## 3. Session Log
 
+### Session 5 — 2026-10-09 (Phase 4: Screenless Mobile PWA Client)
+- **Goal**: Build responsive, dark-adapted web client running face-down with single-tap anywhere touch listener, status aura, and OLED red canvas.
+- **What was done**:
+  1. Built [frontend/index.html](frontend/index.html) with minimalist structure, `#000000` / `#1a0505` color scheme, and viewport optimization for mobile field use.
+  2. Implemented [frontend/src/style.css](frontend/src/style.css) with peripheral status aura animation rings (listening green, computing amber, speaking blue) and ultra-deep red night adaptation preservation.
+  3. Implemented [frontend/src/app.js](frontend/src/app.js) with full-screen tap-to-talk state machine, Web Audio recording, automatic microphone muting during speaker playback, and Geolocation/DeviceOrientation compass capture.
+  4. Configured [frontend/public/manifest.json](frontend/public/manifest.json) for standalone PWA mobile installation.
+  5. Mounted `/src` and `/public` static routes in [backend/app/main.py](backend/app/main.py).
+  6. Created [tests/test_frontend_pwa.py](tests/test_frontend_pwa.py) covering 4 automated test cases.
+- **Evidence Seen Working**:
+  - `pytest tests/` passed all 25/25 tests in 10.36s.
+  - Verified static file serving: GET `/`, GET `/src/style.css`, GET `/src/app.js`, and GET `/public/manifest.json` all return HTTP 200 with valid content.
+  - Health check endpoint verified via `http://127.0.0.1:8000/api/health` returning 200 OK.
+- **Flagged Issues (🔴)**: None.
+
 ### Session 4 — 2026-10-09 (Phase 3: Conversational Reasoning & Audio Engine)
 - **Goal**: Build Gemma-2 conversational reasoning agent (zero-markdown, 35 words max), ElevenLabs voice engine, STT audio engine, and FastAPI endpoints.
-- **What was done**:
-  1. Implemented [backend/app/services/gemma_agent.py](backend/app/services/gemma_agent.py) with prompt template, speech sanitizer, and offline astronomical reasoning engine.
-  2. Implemented [backend/app/services/voice_engine.py](backend/app/services/voice_engine.py) with ElevenLabs REST streaming and local acoustic harmonic fallback.
-  3. Implemented [backend/app/services/stt_engine.py](backend/app/services/stt_engine.py) for spoken query processing.
-  4. Implemented [backend/app/main.py](backend/app/main.py) with `/api/health`, `/api/forecast`, `/api/sky`, `/api/whisper`, and `/api/whisper/json`.
-  5. Created [tests/test_zero_markdown.py](tests/test_zero_markdown.py) and [tests/test_api_endpoints.py](tests/test_api_endpoints.py).
-  6. Created [scripts/verify_whisper_pipeline.py](scripts/verify_whisper_pipeline.py) demonstrating end-to-end audio reasoning pipeline.
-- **Evidence Seen Working**:
-  - `pytest tests/` passed all 21/21 tests in 10.40s.
-  - `python scripts/verify_whisper_pipeline.py` executed:
-    - User query: *"What is that bright amber beacon rising in the east right now?"*
-    - Spoken response: *"That bright beacon rising 34 degrees high in the east is Mars. Because notice the gentle twinkling through the atmospheric boundary layer, it stands out vividly against the open sky."*
-    - Word count: 30 words (strictly within 35-45 word limit).
-    - Zero markdown: 100% compliant (0 markdown tokens).
-    - Audio stream: 66,194 bytes streamed via `/api/whisper` with headers `X-Seeing-Score: 7.7` and `X-Visible-Count: 18`.
+- **What was done**: Schemas, voice engine, STT engine, FastAPI endpoints, zero-markdown validator, and live verification script.
+- **Evidence**: All 21 tests passed; verified 30-word response streamed via `/api/whisper`.
 - **Flagged Issues (🔴)**: None.
 
 ### Session 3 — 2026-10-09 (Phase 2: Tabular Seeing Forecaster)

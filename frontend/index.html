@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1a0505">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>DarkSky Whisper — Eyes-Free Observatory Companion</title>
+  <link rel="manifest" href="/public/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body id="touchCanvas" class="state-idle">
+  <!-- Glanceable Peripheral Status Aura -->
+  <div id="statusAura" class="status-aura"></div>
+
+  <!-- Main Screenless Container -->
+  <main class="field-container">
+    <header class="observatory-header">
+      <div class="logo-mark">
+        <span class="icon-celestial">✦</span>
+        <h1>DARKSKY WHISPER</h1>
+      </div>
+      <div class="night-mode-indicator" title="Wavelength >650nm Rhodopsin Safeguard">
+        <span class="status-dot"></span>
+        <span class="indicator-text">OLED RED SAFEGUARD</span>
+      </div>
+    </header>
+
+    <!-- Center Interaction Hub -->
+    <section class="interaction-hub">
+      <div id="tapTarget" class="tap-target" role="button" aria-label="Tap anywhere on screen to speak">
+        <div class="ripple-ring ring-1"></div>
+        <div class="ripple-ring ring-2"></div>
+        <div class="hub-core">
+          <div id="hubIcon" class="hub-icon">🎙️</div>
+        </div>
+      </div>
+      
+      <div class="state-readout">
+        <p id="stateTitle" class="state-title">READY IN THE GRASS</p>
+        <p id="stateSubtitle" class="state-subtitle">Tap anywhere on the glass to ask a question</p>
+      </div>
+    </section>
+
+    <!-- Real-time Atmospheric & Spatial Telemetry Bar -->
+    <footer class="telemetry-deck">
+      <div class="telemetry-card">
+        <span class="telemetry-label">OBSERVER</span>
+        <span id="telemetryCoords" class="telemetry-val">Acquiring GPS...</span>
+      </div>
+      <div class="telemetry-card">
+        <span class="telemetry-label">HEADING</span>
+        <span id="telemetryHeading" class="telemetry-val">000° (North)</span>
+      </div>
+      <div class="telemetry-card">
+        <span class="telemetry-label">SEEING QUALITY</span>
+        <span id="telemetrySeeing" class="telemetry-val">Analyzing...</span>
+      </div>
+      <div class="telemetry-card">
+        <span class="telemetry-label">DEW RISK</span>
+        <span id="telemetryDew" class="telemetry-val">Monitoring</span>
+      </div>
+    </footer>
+
+    <!-- Spoken Answer Transcript Area (Dim Red, Peripheral Readable) -->
+    <div id="transcriptPanel" class="transcript-panel hidden">
+      <div class="transcript-header">
+        <span class="transcript-tag">SPOKEN GUIDANCE</span>
+        <span id="seeingBadge" class="seeing-badge">9.2 / 10 PRISTINE</span>
+      </div>
+      <p id="transcriptText" class="transcript-text">Waiting for spoken query...</p>
+    </div>
+  </main>
+
+  <!-- Audio Sink -->
+  <audio id="whisperAudioSink" preload="auto"></audio>
+
+  <script src="/src/app.js"></script>
+</body>
+</html>

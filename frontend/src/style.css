@@ -1,0 +1,317 @@
+/* DarkSky Whisper — Sensory & Physical Night-Vision Stylesheet
+   Preserves human rhodopsin photopigment by enforcing monochromatic OLED deep red (>650nm) */
+
+:root {
+  --bg-deep: #000000;
+  --bg-canvas: #090202;
+  --card-bg: rgba(26, 5, 5, 0.65);
+  --card-border: rgba(140, 20, 20, 0.25);
+  
+  --red-primary: #8b1515;
+  --red-accent: #cc1e1e;
+  --red-glow: rgba(204, 30, 30, 0.35);
+  --red-dim: #4a0d0d;
+  --red-muted: #2d0808;
+
+  --font-primary: 'Space Grotesk', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Aura Glow Colors */
+  --aura-idle: rgba(139, 21, 21, 0.15);
+  --aura-listening: rgba(16, 185, 129, 0.45); /* Emerald pulse */
+  --aura-computing: rgba(245, 158, 11, 0.45); /* Amber pulse */
+  --aura-speaking: rgba(59, 130, 246, 0.45);  /* Calm blue glow */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--red-primary);
+  font-family: var(--font-primary);
+  touch-action: manipulation;
+}
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ==========================================================================
+   Peripheral Status Aura (Visible from grass/side view without looking down)
+   ========================================================================== */
+.status-aura {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  border: 4px solid transparent;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+body.state-idle .status-aura {
+  border-color: rgba(139, 21, 21, 0.2);
+  box-shadow: inset 0 0 40px var(--aura-idle);
+}
+
+body.state-listening .status-aura {
+  border-color: #10b981;
+  box-shadow: inset 0 0 60px var(--aura-listening), 0 0 30px var(--aura-listening);
+  animation: auraPulse 1.4s infinite ease-in-out;
+}
+
+body.state-computing .status-aura {
+  border-color: #f59e0b;
+  box-shadow: inset 0 0 60px var(--aura-computing), 0 0 30px var(--aura-computing);
+  animation: auraPulse 0.9s infinite ease-in-out;
+}
+
+body.state-speaking .status-aura {
+  border-color: #3b82f6;
+  box-shadow: inset 0 0 70px var(--aura-speaking), 0 0 35px var(--aura-speaking);
+  animation: auraBreathing 2.2s infinite ease-in-out;
+}
+
+@keyframes auraPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1.0; }
+}
+
+@keyframes auraBreathing {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1.0; transform: scale(1.002); }
+}
+
+/* ==========================================================================
+   Screenless Field Container
+   ========================================================================== */
+.field-container {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 1.5rem 1.25rem env(safe-area-inset-bottom, 1.25rem);
+}
+
+/* Observatory Header */
+.observatory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--red-muted);
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-celestial {
+  font-size: 1.1rem;
+  color: var(--red-accent);
+}
+
+.logo-mark h1 {
+  font-size: 0.95rem;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  color: var(--red-primary);
+}
+
+.night-mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--red-dim);
+  letter-spacing: 0.05em;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--red-accent);
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+/* ==========================================================================
+   Center Interaction Hub (Tap Anywhere)
+   ========================================================================== */
+.interaction-hub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto 0;
+  text-align: center;
+  cursor: pointer;
+}
+
+.tap-target {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.75rem;
+}
+
+.hub-core {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--red-dim) 0%, var(--bg-deep) 100%);
+  border: 1px solid var(--red-primary);
+  box-shadow: 0 0 25px var(--red-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hub-icon {
+  font-size: 2.2rem;
+  transition: transform 0.2s ease;
+}
+
+.ripple-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--red-dim);
+  pointer-events: none;
+}
+
+.ring-1 {
+  width: 120px;
+  height: 120px;
+  animation: pulseRings 3s infinite cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+.ring-2 {
+  width: 150px;
+  height: 150px;
+  animation: pulseRings 3s infinite cubic-bezier(0.2, 0.8, 0.4, 1) 0.8s;
+}
+
+@keyframes pulseRings {
+  0% { transform: scale(0.85); opacity: 0.8; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+.state-title {
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: var(--red-accent);
+  margin-bottom: 0.35rem;
+}
+
+.state-subtitle {
+  font-size: 0.82rem;
+  color: var(--red-primary);
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   Telemetry Deck
+   ========================================================================== */
+.telemetry-deck {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.telemetry-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  backdrop-filter: blur(8px);
+}
+
+.telemetry-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--red-dim);
+}
+
+.telemetry-val {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--red-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Spoken Transcript Panel
+   ========================================================================== */
+.transcript-panel {
+  background: rgba(20, 4, 4, 0.85);
+  border: 1px solid var(--red-dim);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  margin-top: 0.5rem;
+  animation: slideUp 0.3s ease;
+}
+
+.transcript-panel.hidden {
+  display: none;
+}
+
+.transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.transcript-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--red-dim);
+}
+
+.seeing-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.transcript-text {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--red-accent);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

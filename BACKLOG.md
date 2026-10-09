@@ -45,11 +45,11 @@
 ## Phase 4: Screenless Zero-Aim Mobile PWA Client
 **Exit Goal**: Responsive, dark-adapted web interface running face-down with single-tap anywhere touch listener, status aura, and OLED red canvas.
 
-- [ ] **Task 4.1**: Build `frontend/index.html` with minimalist structure and `#000000` / `#1a0505` color scheme.
-- [ ] **Task 4.2**: Implement `frontend/src/style.css` with peripheral status aura animation rings (listening green, computing amber, speaking blue).
-- [ ] **Task 4.3**: Implement `frontend/src/app.js` with full-screen tap-to-talk state machine, Web Audio recording, and speaker mic-muting.
-- [ ] **Task 4.4**: Configure `frontend/public/manifest.json` for standalone PWA mobile installation.
-- [ ] **Task 4.5**: Verify zero rhodopsin bleaching in dark mode and test tap responsiveness.
+- [x] **Task 4.1**: Build `frontend/index.html` with minimalist structure and `#000000` / `#1a0505` color scheme.
+- [x] **Task 4.2**: Implement `frontend/src/style.css` with peripheral status aura animation rings (listening green, computing amber, speaking blue).
+- [x] **Task 4.3**: Implement `frontend/src/app.js` with full-screen tap-to-talk state machine, Web Audio recording, and speaker mic-muting.
+- [x] **Task 4.4**: Configure `frontend/public/manifest.json` for standalone PWA mobile installation.
+- [x] **Task 4.5**: Verify zero rhodopsin bleaching in dark mode and test tap responsiveness.
 - [ ] 🔒 **Phase 4 Checkpoint**: Product Owner field test review of screenless touch-to-talk interface.
 
 ---
