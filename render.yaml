@@ -3,7 +3,7 @@ services:
     name: darksky-whisper
     runtime: docker
     region: oregon
-    plan: starter
+    plan: free
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
