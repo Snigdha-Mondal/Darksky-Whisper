@@ -144,20 +144,57 @@ class GemmaAgent:
             seeing_note = "atmospheric seeing is exceptionally steady"
         else:
             stability_clause = "Through slight atmospheric seeing turbulence, it twinkles gently against the open sky."
-            seeing_note = "atmospheric seeing has slight turbulence"
-
-        # 1. Atmospheric Seeing & Sky Clarity & Weather Queries
-        seeing_keywords = [
-            "clear", "clarity", "seeing", "weather", "atmosphere", "atmospheric",
-            "turbulen", "dew", "cloud", "transparent", "transparency", "condition",
-            "stargazing", "good night", "observe", "observing"
-        ]
         known_planets_stars = [
             "saturn", "jupiter", "mars", "venus", "mercury", "moon", "orion",
-            "sirius", "vega", "aldebaran", "betelgeuse", "rigel", "polaris", "pleiades"
+            "sirius", "vega", "capella", "aldebaran", "betelgeuse", "rigel", "polaris", "pleiades", "andromeda"
         ]
         has_specific_target = any(name in query_lower for name in known_planets_stars)
 
+        # 1. Observation Window & Peak Timing Queries
+        window_keywords = ["window", "prime", "best time", "peak", "when should", "when to", "timing", "schedule", "forecast"]
+        if any(w in query_lower for w in window_keywords) and not has_specific_target:
+            score = seeing_data.current_seeing_score if seeing_data else 7.5
+            peak_window = (
+                seeing_data.peak_observation_window.replace(" - ", " to ").split(" (")[0]
+                if seeing_data and seeing_data.peak_observation_window
+                else "tonight"
+            )
+            dew_risk = (
+                seeing_data.current_dew_risk.value
+                if seeing_data and hasattr(seeing_data, "current_dew_risk")
+                else "low"
+            )
+            dew_clause = "keep lens heaters ready for dew" if dew_risk in ["critical", "high"] else "dew risk is minimal"
+            return self.sanitize_for_speech(
+                f"Your prime observation window opens at {peak_window}. "
+                f"Atmospheric seeing reaches {score:.1f} out of 10 with calm optical stability. "
+                f"The sky is clear overhead and {dew_clause}."
+            )
+
+        # 2. Dew Risk & Moisture Inquiries
+        dew_keywords = ["dew", "fog", "humidity", "moisture", "lens heater"]
+        if any(d in query_lower for d in dew_keywords) and not has_specific_target:
+            dew_risk = (
+                seeing_data.current_dew_risk.value
+                if seeing_data and hasattr(seeing_data, "current_dew_risk")
+                else "low"
+            )
+            if dew_risk in ["critical", "high"]:
+                return self.sanitize_for_speech(
+                    f"Dew risk is currently rated {dew_risk.upper()} across your optics. "
+                    f"Temperature is near the dew point, so run lens heaters to prevent condensation."
+                )
+            else:
+                return self.sanitize_for_speech(
+                    f"Dew risk is currently low with a safe thermal margin. "
+                    f"Telescope optics and camera lenses will remain clear and dry under tonight's open sky."
+                )
+
+        # 3. Atmospheric Seeing & Sky Clarity & Weather Queries
+        seeing_keywords = [
+            "clear", "clarity", "seeing", "weather", "atmospher", "turbulen",
+            "cloud", "transparen", "condition", "stargaz", "observ", "good night"
+        ]
         if any(k in query_lower for k in seeing_keywords) and not has_specific_target:
             score = seeing_data.current_seeing_score if seeing_data else 7.5
             antoniadi_raw = (
@@ -188,7 +225,7 @@ class GemmaAgent:
                 f"Prime viewing window begins around {peak_window}."
             )
 
-        # 2. Query asks about the Moon
+        # 4. Query asks about the Moon
         if "moon" in query_lower or "lunar" in query_lower:
             if sky_data.moon:
                 m = sky_data.moon
