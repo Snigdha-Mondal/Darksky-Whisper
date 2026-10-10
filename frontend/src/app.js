@@ -165,61 +165,72 @@ class DarkSkyApp {
     clearTimeout(this.maxListeningTimer);
     this.unlockAudioOnUserGesture();
 
-    // Initialize Web Speech Recognition if available in Chrome/Edge/Safari
+    // Initialize Web Speech Recognition (Google Speech Services / Apple Siri engine)
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       try {
         this.recognition = new SpeechRecognition();
-        this.recognition.continuous = true;
+        // Crucial for mobile Android Chrome: continuous MUST be false to prevent stream stall
+        this.recognition.continuous = false;
         this.recognition.interimResults = true;
+        this.recognition.maxAlternatives = 1;
         this.recognition.lang = 'en-US';
 
         this.recognition.onresult = (event) => {
-          let finalTranscript = '';
-          let interimTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
-            } else {
-              interimTranscript += event.results[i][0].transcript;
-            }
+          let currentTranscript = '';
+          for (let i = 0; i < event.results.length; ++i) {
+            currentTranscript += event.results[i][0].transcript;
           }
-          const currentTranscript = (finalTranscript || interimTranscript || '').trim();
+          currentTranscript = currentTranscript.trim();
           if (currentTranscript) {
             this.recognizedTranscript = currentTranscript;
             this.stateSubtitle.textContent = `"${currentTranscript}"`;
 
-            // Reset natural speech pause detector (2.2s of silence after words are spoken)
+            // Reset pause timeout
             clearTimeout(this.silenceTimeout);
             this.silenceTimeout = setTimeout(() => {
               if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
-                console.log('Voice pause detected -> auto-advancing to COMPUTING');
+                console.log('Pause detected -> auto-advancing to COMPUTING');
                 this.stopListeningAndCompute();
               }
-            }, 2200);
+            }, 1800);
           }
         };
 
-        // When browser speech engine detects end of spoken phrase
+        // When browser speech engine detects end of spoken utterance
         this.recognition.onspeechend = () => {
           clearTimeout(this.silenceTimeout);
           this.silenceTimeout = setTimeout(() => {
             if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
-              console.log('onspeechend fired -> auto-advancing to COMPUTING');
+              console.log('onspeechend fired -> advancing to COMPUTING');
               this.stopListeningAndCompute();
             }
-          }, 1200);
+          }, 600);
         };
 
         this.recognition.onend = () => {
-          // If speech recognition ended naturally with words spoken, auto-advance
-          if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
-            this.stopListeningAndCompute();
+          if (this.currentState === State.LISTENING) {
+            if (this.recognizedTranscript && this.recognizedTranscript.trim().length > 0) {
+              this.stopListeningAndCompute();
+            } else {
+              // No voice captured
+              this.setState(State.IDLE);
+              this.stateSubtitle.textContent = 'No voice detected — tap screen to speak again';
+            }
           }
         };
 
         this.recognition.onerror = (e) => {
-          console.warn('Speech recognition warning:', e.error);
+          console.warn('Speech recognition notice:', e.error);
+          if (e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'network') {
+            if (this.currentState === State.LISTENING && !this.recognizedTranscript.trim()) {
+              this.setState(State.IDLE);
+              this.stateSubtitle.textContent = 'Could not catch voice — tap anywhere to speak';
+            }
+          } else if (e.error === 'not-allowed') {
+            this.setState(State.IDLE);
+            this.stateSubtitle.textContent = 'Microphone permission needed — tap to allow';
+          }
         };
 
         this.recognition.start();
@@ -237,6 +248,7 @@ class DarkSkyApp {
       if (this.currentState === State.LISTENING && !this.recognizedTranscript.trim()) {
         console.log('No speech detected within 8s -> returning to IDLE');
         this.setState(State.IDLE);
+        this.stateSubtitle.textContent = 'No voice detected — tap anywhere to speak';
         if (this.recognition) {
           try { this.recognition.stop(); } catch (e) {}
         }
@@ -266,14 +278,20 @@ class DarkSkyApp {
 
       this.mediaRecorder.onstop = () => {
         const audioBlob = new Blob(this.audioChunks, { type: mimeType });
-        this.dispatchWhisperPipeline(audioBlob, this.recognizedTranscript);
+        if (audioBlob.size > 0) {
+          this.dispatchWhisperPipeline(audioBlob, this.recognizedTranscript);
+        } else {
+          this.setState(State.IDLE);
+          this.stateSubtitle.textContent = 'No audio recorded — tap to speak';
+        }
       };
 
       this.mediaRecorder.start();
       this.setState(State.LISTENING);
     } catch (err) {
       console.warn('Microphone access fallback:', err);
-      this.setState(State.LISTENING);
+      this.setState(State.IDLE);
+      this.stateSubtitle.textContent = 'Microphone access denied — tap to enable';
     }
   }
 
@@ -283,6 +301,16 @@ class DarkSkyApp {
 
     if (this.currentState === State.COMPUTING) {
       return; // Prevent duplicate dispatch
+    }
+
+    // If no text was recognized and we don't have mediaRecorder active, don't dispatch empty query
+    if (!this.recognizedTranscript.trim() && (!this.mediaRecorder || this.mediaRecorder.state !== 'recording')) {
+      if (this.recognition) {
+        try { this.recognition.stop(); } catch (e) {}
+      }
+      this.setState(State.IDLE);
+      this.stateSubtitle.textContent = 'No voice detected — tap screen to speak';
+      return;
     }
 
     this.setState(State.COMPUTING);
@@ -300,8 +328,12 @@ class DarkSkyApp {
       }
     } else {
       setTimeout(() => {
-        this.dispatchWhisperPipeline(null, this.recognizedTranscript || 'What celestial objects are currently visible?');
-      }, 500);
+        if (this.recognizedTranscript.trim()) {
+          this.dispatchWhisperPipeline(null, this.recognizedTranscript.trim());
+        } else {
+          this.setState(State.IDLE);
+        }
+      }, 300);
     }
   }
 

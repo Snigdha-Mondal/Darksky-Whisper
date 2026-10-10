@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/style.css">
+  <link rel="stylesheet" href="/src/style.css?v=0.1.4">
 </head>
 <body id="touchCanvas" class="state-idle">
   <!-- Glanceable Peripheral Status Aura -->
@@ -47,11 +47,12 @@
 
       <!-- Quick Suggestion Prompts -->
       <div id="quickPrompts" class="quick-prompts">
-        <span class="prompt-chip" data-query="What is that bright orange star rising in the east?">"What's that bright star in the east?"</span>
-        <span class="prompt-chip" data-query="Can I see Saturn tonight?">"Can I see Saturn?"</span>
+        <span class="prompt-chip" data-query="What can I see in the sky tonight?">"What can I see in the sky tonight?"</span>
+        <span class="prompt-chip" data-query="What is that bright star rising in the east?">"What's that bright star in the east?"</span>
+        <span class="prompt-chip" data-query="Can I see Saturn right now?">"Can I see Saturn?"</span>
+        <span class="prompt-chip" data-query="What is the prime observation window tonight?">"When is the observation window?"</span>
+        <span class="prompt-chip" data-query="Is there any dew risk tonight?">"Is there any dew risk?"</span>
         <span class="prompt-chip" data-query="Is the Moon visible right now?">"Is the Moon visible?"</span>
-        <span class="prompt-chip" data-query="Where is Orion located?">"Where is Orion?"</span>
-        <span class="prompt-chip" data-query="How clear is the sky tonight?">"How clear is the sky?"</span>
       </div>
     </section>
 
@@ -88,6 +89,6 @@
   <!-- Audio Sink -->
   <audio id="whisperAudioSink" preload="auto"></audio>
 
-  <script src="/src/app.js"></script>
+  <script src="/src/app.js?v=0.1.4"></script>
 </body>
 </html>

@@ -13,7 +13,7 @@ This evaluation report benchmarks the **DarkSky Whisper Fine-Tuned Spoken Observ
 | **Brevity Ceiling ($\\le 45$ words)** | 0.0% | **100.0%** | **+100.0%** Adherence |
 | **Spatial Cue Grounding** | 100.0% | **100.0%** | **+0.0%** Directional precision |
 | **Atmospheric Seeing Grounding** | 32.0% | **76.0%** | **+44.0%** TabPFN integration |
-| **Average Response Latency** | 45.0 ms | **0.0 ms** | **45.0 ms** Faster delivery |
+| **Average Response Latency** | 45.0 ms | **0.1 ms** | **44.9 ms** Faster delivery |
 
 ---
 

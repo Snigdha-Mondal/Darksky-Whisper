@@ -45,6 +45,19 @@ app.add_middleware(
     expose_headers=["X-Spoken-Answer", "X-Seeing-Score", "X-Visible-Count", "X-User-Transcript"],
 )
 
+
+@app.middleware("http")
+async def add_no_cache_header(request, call_next):
+    """Ensure mobile browsers never serve stale PWA assets or scripts."""
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path.startswith("/src/") or path.startswith("/public/"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
 
