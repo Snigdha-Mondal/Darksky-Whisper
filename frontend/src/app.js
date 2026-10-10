@@ -58,18 +58,18 @@ class DarkSkyApp {
 
   setupPromptChips() {
     document.querySelectorAll('.prompt-chip').forEach((chip) => {
-      chip.addEventListener('click', (e) => {
-        e.stopPropagation(); // Don't trigger full-screen tap
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.resume();
-        }
+      const triggerQuery = (e) => {
+        e.stopPropagation();
+        this.unlockAudioOnUserGesture();
         const query = chip.getAttribute('data-query');
         if (query) {
           this.setState(State.COMPUTING);
           this.stateSubtitle.textContent = `"${query}"`;
           this.dispatchWhisperPipeline(null, query);
         }
-      });
+      };
+      chip.addEventListener('pointerdown', triggerQuery);
+      chip.addEventListener('click', (e) => e.stopPropagation());
     });
   }
 
@@ -79,13 +79,28 @@ class DarkSkyApp {
   setupTouchListener() {
     // Touch anywhere on the screen (face-down in grass friendly)
     window.addEventListener('pointerdown', (e) => {
-      // Prevent double triggers
-      e.preventDefault();
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.resume();
+      // Don't intercept clicks on interactive prompt chips or links
+      if (e.target.closest('.prompt-chip') || e.target.closest('a') || e.target.closest('button')) {
+        return;
       }
+      this.unlockAudioOnUserGesture();
       this.handleGlobalTap();
     });
+  }
+
+  unlockAudioOnUserGesture() {
+    if (this.audioSink) {
+      this.audioSink.play().then(() => {
+        this.audioSink.pause();
+        this.audioSink.currentTime = 0;
+      }).catch(() => {});
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.resume();
+    }
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().catch(() => {});
+    }
   }
 
   handleGlobalTap() {
@@ -148,30 +163,41 @@ class DarkSkyApp {
     this.recognizedTranscript = '';
     clearTimeout(this.silenceTimeout);
     clearTimeout(this.maxListeningTimer);
+    this.unlockAudioOnUserGesture();
 
     // Initialize Web Speech Recognition if available in Chrome/Edge/Safari
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       try {
         this.recognition = new SpeechRecognition();
-        this.recognition.continuous = false;
+        this.recognition.continuous = true;
         this.recognition.interimResults = true;
         this.recognition.lang = 'en-US';
 
         this.recognition.onresult = (event) => {
-          const current = event.resultIndex;
-          const transcript = event.results[current][0].transcript;
-          this.recognizedTranscript = transcript;
-          this.stateSubtitle.textContent = `"${transcript}"`;
-
-          // Automatic speech pause detection: if user pauses for 1.6s after speaking, compute automatically!
-          clearTimeout(this.silenceTimeout);
-          this.silenceTimeout = setTimeout(() => {
-            if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
-              console.log('Voice pause detected -> auto-advancing to COMPUTING');
-              this.stopListeningAndCompute();
+          let finalTranscript = '';
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
             }
-          }, 1600);
+          }
+          const currentTranscript = (finalTranscript || interimTranscript || '').trim();
+          if (currentTranscript) {
+            this.recognizedTranscript = currentTranscript;
+            this.stateSubtitle.textContent = `"${currentTranscript}"`;
+
+            // Reset natural speech pause detector (2.2s of silence after words are spoken)
+            clearTimeout(this.silenceTimeout);
+            this.silenceTimeout = setTimeout(() => {
+              if (this.currentState === State.LISTENING && this.recognizedTranscript.trim().length > 0) {
+                console.log('Voice pause detected -> auto-advancing to COMPUTING');
+                this.stopListeningAndCompute();
+              }
+            }, 2200);
+          }
         };
 
         // When browser speech engine detects end of spoken phrase
@@ -182,7 +208,7 @@ class DarkSkyApp {
               console.log('onspeechend fired -> auto-advancing to COMPUTING');
               this.stopListeningAndCompute();
             }
-          }, 400);
+          }, 1200);
         };
 
         this.recognition.onend = () => {
@@ -197,15 +223,19 @@ class DarkSkyApp {
         };
 
         this.recognition.start();
+        this.setState(State.LISTENING);
       } catch (err) {
         console.warn('SpeechRecognition start error:', err);
+        this.startFallbackMediaRecorder();
       }
+    } else {
+      this.startFallbackMediaRecorder();
     }
 
-    // Safety timeout: if no speech is heard at all after 7 seconds, revert to idle
+    // Safety timeout: if no speech is heard at all after 8 seconds, revert to idle
     this.maxListeningTimer = setTimeout(() => {
       if (this.currentState === State.LISTENING && !this.recognizedTranscript.trim()) {
-        console.log('No speech detected within 7s -> returning to IDLE');
+        console.log('No speech detected within 8s -> returning to IDLE');
         this.setState(State.IDLE);
         if (this.recognition) {
           try { this.recognition.stop(); } catch (e) {}
@@ -217,8 +247,10 @@ class DarkSkyApp {
           this.audioStream.getTracks().forEach((track) => track.stop());
         }
       }
-    }, 7000);
+    }, 8000);
+  }
 
+  async startFallbackMediaRecorder() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.audioStream = stream;
@@ -452,6 +484,12 @@ class DarkSkyApp {
     }
   }
 
+  formatCoordinates(lat, lon) {
+    const latDir = lat >= 0 ? 'N' : 'S';
+    const lonDir = lon >= 0 ? 'E' : 'W';
+    return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
+  }
+
   // --------------------------------------------------------------------------
   // Sensors: GPS Geolocation & DeviceOrientation Compass
   // --------------------------------------------------------------------------
@@ -462,12 +500,12 @@ class DarkSkyApp {
         (pos) => {
           this.observer.latitude = parseFloat(pos.coords.latitude.toFixed(4));
           this.observer.longitude = parseFloat(pos.coords.longitude.toFixed(4));
-          this.coordsEl.textContent = `${this.observer.latitude}° N, ${Math.abs(this.observer.longitude)}° W`;
+          this.coordsEl.textContent = this.formatCoordinates(this.observer.latitude, this.observer.longitude);
           this.fetchSeeingForecast();
         },
         (err) => {
           console.log('Using default observatory coordinates (Cherry Springs Park):', err.message);
-          this.coordsEl.textContent = `${this.observer.latitude}° N, ${Math.abs(this.observer.longitude)}° W`;
+          this.coordsEl.textContent = this.formatCoordinates(this.observer.latitude, this.observer.longitude);
         },
         { timeout: 5000, enableHighAccuracy: true }
       );

@@ -9,10 +9,10 @@ This evaluation report benchmarks the **DarkSky Whisper Fine-Tuned Spoken Observ
 | Metric | Base Gemma-2 (Zero-Shot) | DarkSky Whisper Fine-Tuned | Delta / Improvement |
 |---|---|---|---|
 | **Zero-Markdown Compliance** | 0.0% | **100.0%** | **+100.0%** (Eliminates TTS glitches) |
-| **Average Word Count** | 51.5 words | **29.2 words** | **-43.2%** Token Reduction |
+| **Average Word Count** | 51.5 words | **32.1 words** | **-37.7%** Token Reduction |
 | **Brevity Ceiling ($\\le 45$ words)** | 0.0% | **100.0%** | **+100.0%** Adherence |
 | **Spatial Cue Grounding** | 100.0% | **100.0%** | **+0.0%** Directional precision |
-| **Atmospheric Seeing Grounding** | 32.0% | **78.7%** | **+46.7%** TabPFN integration |
+| **Atmospheric Seeing Grounding** | 32.0% | **76.0%** | **+44.0%** TabPFN integration |
 | **Average Response Latency** | 45.0 ms | **0.0 ms** | **45.0 ms** Faster delivery |
 
 ---

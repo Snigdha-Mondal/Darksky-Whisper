@@ -50,6 +50,10 @@ def test_zero_markdown_and_brevity_across_diverse_queries():
         "What is the brightest light in the night sky?",
         "Tell me about the sky condition tonight",
         "What is rising above the tree line in the southeast?",
+        "What stars are visible in the sky?",
+        "What stars are visible in",
+        "What planets can I see?",
+        "What can I see tonight?",
     ]
 
     for query in queries:

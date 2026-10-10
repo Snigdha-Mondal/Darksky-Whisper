@@ -35,6 +35,23 @@
 
 ## 3. Session Log
 
+### Session 11 — 2026-10-10 (Astronomical Reasoning & Mobile Phone Experience Optimization)
+- **Goal**: Resolve astronomical reasoning query matching & grammar glitches, fix coordinate hemisphere formatting (`E`/`W`), and optimize mobile browser audio & speech recognition behavior.
+- **What was done**:
+  1. Fixed coordinate display in [frontend/src/app.js](frontend/src/app.js) with dynamic hemisphere directional indicators (`N`/`S` and `E`/`W`).
+  2. Overhauled general visibility reasoning in [backend/app/services/gemma_agent.py](backend/app/services/gemma_agent.py) to comprehensively handle broad sky tour queries (*"what stars are visible"*, *"what can I see"*, *"which planets are visible"*) by detailing top visible targets across compass directions.
+  3. Fixed grammatical stability phrasing clauses in offline reasoning fallback (eliminating *"Because notice..."* artifacts).
+  4. Optimized mobile PWA touch and microphone handling in [frontend/src/app.js](frontend/src/app.js):
+     - Unlocked HTML5 Audio and Web Speech Synthesis upon initial user gesture.
+     - Prevented mic contention on mobile browsers by avoiding simultaneous `getUserMedia` when `SpeechRecognition` is active.
+     - Adjusted speech pause detection timeout to a comfortable 2.2s (with 1.2s on `onspeechend`) so users are not cut off mid-utterance.
+     - Enabled uninterrupted tap triggers on prompt chips.
+  5. Expanded [tests/test_zero_markdown.py](tests/test_zero_markdown.py) with broad visibility and cutoff test cases; all 32 automated tests passing cleanly.
+- **Evidence Seen Working**:
+  - `pytest tests/ -v` executed with 32/32 tests passing.
+  - `python benchmarks/run_benchmark.py` completed with 100% Zero-Markdown compliance across 75 test pairs.
+- **Flagged Issues (🔴)**: None.
+
 ### Session 10 — 2026-10-10 (Live Render Deployment & Public Web Service Verification)
 - **Goal**: Deploy containerized FastAPI application to Render on free compute plan and verify public endpoints.
 - **What was done**:

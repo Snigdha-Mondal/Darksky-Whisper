@@ -139,11 +139,12 @@ class GemmaAgent:
         targets = sky_data.visible_bodies_in_view or sky_data.all_visible_bodies
 
         seeing_score = seeing_data.current_seeing_score if seeing_data else 8.0
-        stability_phrase = (
-            "tonight's atmospheric seeing is exceptionally steady"
-            if seeing_score >= 8.0
-            else "notice the gentle twinkling through the atmospheric boundary layer"
-        )
+        if seeing_score >= 8.0:
+            stability_clause = "Under tonight's calm atmospheric seeing, it shines with steady radiance."
+            seeing_note = "atmospheric seeing is exceptionally steady"
+        else:
+            stability_clause = "Through slight atmospheric seeing turbulence, it twinkles gently against the open sky."
+            seeing_note = "atmospheric seeing has slight turbulence"
 
         # 1. Atmospheric Seeing & Sky Clarity & Weather Queries
         seeing_keywords = [
@@ -201,16 +202,31 @@ class GemmaAgent:
                     "The Moon is currently below the horizon, creating pitch-black skies that reveal faint stars and the Milky Way dust lanes."
                 )
 
-        # 3. Sky overview / Tour / Recommendations
-        overview_phrases = ["what can i see", "what should i look at", "what's visible", "what is visible", "tour", "recommend", "show me"]
+        # 3. Sky overview / Visible stars and planets / Tour
+        overview_phrases = [
+            "what can i see", "what should i look at", "what's visible", "what is visible",
+            "what star", "what stars", "which stars", "stars are visible", "stars visible",
+            "visible stars", "what planet", "which planet", "planets visible", "planets are visible",
+            "tour", "recommend", "show me", "what is up there", "what is in the sky",
+            "what can be seen", "what are visible", "visible tonight"
+        ]
         if any(p in query_lower for p in overview_phrases):
-            top_bodies = [b.name.split(" (")[0] for b in targets[:3]]
-            bodies_text = ", ".join(top_bodies) if top_bodies else "Polaris"
-            return self.sanitize_for_speech(
-                f"Currently {len(targets)} celestial targets are above the horizon. "
-                f"Look up to spot {bodies_text}. "
-                f"Because {stability_phrase}, fainter clusters stand out clearly."
-            )
+            all_vis = sky_data.all_visible_bodies
+            if all_vis:
+                # Pick up to 3 distinct prominent targets
+                selected = all_vis[:3]
+                desc_parts = [f"{b.name} {b.altitude_deg:.0f} degrees up in the {b.cardinal_direction.lower()}" for b in selected]
+                desc_text = ", ".join(desc_parts)
+                return self.sanitize_for_speech(
+                    f"Currently {len(all_vis)} celestial targets are above your horizon. "
+                    f"Look for {desc_text}. "
+                    f"Because {seeing_note}, these beacons stand out vividly."
+                )
+            else:
+                return self.sanitize_for_speech(
+                    f"You are looking at an open sky. "
+                    f"Because {seeing_note}, faint background stars and constellations are visible across the dome."
+                )
 
         # 4. Specific named target lookup (visible above horizon)
         for body in sky_data.all_visible_bodies:
@@ -218,7 +234,7 @@ class GemmaAgent:
             if body_name_lower in query_lower:
                 return self.sanitize_for_speech(
                     f"That is {body.name}, visible {body.altitude_deg:.0f} degrees up in the {body.cardinal_direction.lower()}. "
-                    f"Because {stability_phrase}, it shines with a calm, radiant glow."
+                    f"{body.notes}. {stability_clause}"
                 )
 
         # 5. Check if user asked about a known celestial target that is below horizon
@@ -231,6 +247,7 @@ class GemmaAgent:
             "orion": "Orion",
             "sirius": "Sirius",
             "vega": "Vega",
+            "capella": "Capella",
             "aldebaran": "Aldebaran",
             "betelgeuse": "Betelgeuse",
             "rigel": "Rigel",
@@ -254,8 +271,14 @@ class GemmaAgent:
                 if directional_targets:
                     chosen = directional_targets[0]
                     return self.sanitize_for_speech(
-                        f"Looking towards the {cardinal}, that bright beacon is {chosen.name}, {chosen.altitude_deg:.0f} degrees above the horizon. "
-                        f"Because {stability_phrase}, it shines with steady brilliance."
+                        f"Looking towards the {cardinal}, that bright beacon {chosen.altitude_deg:.0f} degrees up is {chosen.name}. "
+                        f"{chosen.notes}. {stability_clause}"
+                    )
+                elif sky_data.all_visible_bodies:
+                    alt_chosen = sky_data.all_visible_bodies[0]
+                    return self.sanitize_for_speech(
+                        f"Looking towards the {cardinal}, no prominent planets are above the horizon. "
+                        f"Turn towards the {alt_chosen.cardinal_direction.lower()} to spot {alt_chosen.name} {alt_chosen.altitude_deg:.0f} degrees high."
                     )
 
         # 7. Brightest object in field of view or sky ("what is that bright star/light?")
@@ -263,13 +286,13 @@ class GemmaAgent:
             brightest = targets[0]
             return self.sanitize_for_speech(
                 f"That bright beacon rising {brightest.altitude_deg:.0f} degrees high in the {brightest.cardinal_direction.lower()} is {brightest.name}. "
-                f"Because {stability_phrase}, it stands out vividly against the open sky."
+                f"{brightest.notes}. {stability_clause}"
             )
 
         # 8. General night sky fallback
         return self.sanitize_for_speech(
             f"You are looking at an open sky. "
-            f"Because {stability_phrase}, look towards the horizon to identify the brightest navigational beacons."
+            f"Because {seeing_note}, look towards the horizon to identify the brightest navigational beacons."
         )
 
     def answer_query(
